@@ -28,7 +28,22 @@ function BloodTest({onAdd, patients, doctors }) {
     date: ""
 })
 
+const handleSubmit = () => {
+  const resultsString = 
+    `Neutrophils: ${report.neutrophils}, Lymphocytes: ${report.lymphocytes}, Monocytes: ${report.monocytes}, ` +
+    `Eosinophils: ${report.eosinophils}, Basophils: ${report.basophils}, Total Cir. Eosinophils: ${report.totalCirEosinophils}, ` +
+    `RBC Count: ${report.rbcCount}, HCT/PCV: ${report.hctOrPCV}, MCV: ${report.mcv}, MCH: ${report.mch}, MCHC: ${report.mchc}, ` +
+    `RDW_CV: ${report.rdw_cv}, RDW_SD: ${report.rdw_sd}, Platelet Count: ${report.plateletCount}, MPV: ${report.mpv}, ` +
+    `PDW: ${report.pdw}, PCT: ${report.pct}, P_LCR: ${report.p_lcr}, P_LCC: ${report.p_lcc}`
 
+  onAdd({
+    patientId: report.patientId,
+    doctorId: report.doctorId,
+    bloodType: report.bloodType,
+    results: resultsString,
+    date: report.date
+  })
+}
   return (
     <div>
         <h1>Blood test report</h1>
@@ -340,7 +355,7 @@ function BloodTest({onAdd, patients, doctors }) {
             />
         </div>
         <br/>
-        <button onClick={() => onAdd(report)}>save</button>
+        <button onClick={handleSubmit}>save</button>
         </div>
     </div>
   )
