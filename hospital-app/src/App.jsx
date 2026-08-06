@@ -10,6 +10,7 @@ import PrescriptionList from './PrescriptionList'
 import LabReports from './LabReports'
 import Dashboard from './Dashboard'
 import Bill from './Bill'
+import Reception from './Reception'
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
         <Route path="/labreports" element = {<LabReports/>} />  
         <Route path="/dashboard" element = {<Dashboard/>} /> 
         <Route path="/bill" element = {<Bill/>} />
+        <Route path="/reception" element={<Reception/>} />
       </Routes>
     </BrowserRouter>
   )
