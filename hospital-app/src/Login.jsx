@@ -11,7 +11,7 @@ function Login(){
         fetch('https://localhost:7172/api/user/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ Username: username, Password: password, Role: "" })
+            body: JSON.stringify({ Username: username, Password: password })
         })
             .then((response) => {
             if (!response.ok) {
