@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
  
 function Login(){
  
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const navigate = useNavigate();
 
     const handleLogin = () => {
         console.log("Trying login with:", username, password)
@@ -20,13 +21,17 @@ function Login(){
             return response.json()
             })
             .then((user) => {
-            console.log('Logged in as:', user)
+            console.log('Logged in as:', user);
+            localStorage.setItem("user", JSON.stringify(user));
+            navigate("/dashboard");
 
             })
             .catch((error) => {
             alert(error.message)
             })
         }
+
+  
 
     return(
         <div>

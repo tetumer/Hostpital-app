@@ -7,7 +7,7 @@ function DepartmentList() {
   const [hoveredId, setHoveredId] = useState(null)
 
 useEffect(() => {
-  fetch('https://jsonplaceholder.typicode.com/users')
+  fetch('https://localhost:7172/api/department')
     .then((response) => response.json())
     .then((data) => {
       const formatted = data.map((item) => ({

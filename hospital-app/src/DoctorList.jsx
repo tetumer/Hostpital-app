@@ -7,19 +7,20 @@ function DoctorList() {
   const [hoveredId, setHoveredId] = useState(null)
 
   useEffect(() => {
-    fetch('https://jsonplaceholder.typicode.com/users')
+    fetch('https://localhost:7172/api/doctor')
       .then((response) => response.json())
       .then((data) => {
         const formatted = data.map((item) => ({
           id: item.id,
           name: item.name,
-          specialization: "Cardiology",
-          availability: "Available",
+          specialization: item.specialization,
+          availability: item.availability,
         }))
         setDoctors(formatted)
         setLoading(false)
       })
   }, [])
+  
 
   const [search, setSearch] = useState("")
   const [name, setName] = useState("")

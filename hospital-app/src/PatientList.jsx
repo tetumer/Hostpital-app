@@ -6,21 +6,14 @@ function PatientList() {
   const [loading, setLoading] = useState(true)
   const [hoveredId, setHoveredId] = useState(null)
 
-useEffect(() => {
-  fetch('https://jsonplaceholder.typicode.com/users')
-    .then((response) => response.json())
-    .then((data) => {
-      const formatted = data.map((item) => ({
-        id: item.id,
-        name: item.name,
-        age: 30,
-        assignedDoctor: "Dr. Ahmed",
-        status: "Outpatient",
-      }))
-      setPatients(formatted)
-      setLoading(false)
-    })
-}, [])
+  useEffect(() => {
+    fetch('https://localhost:7172/api/patient')
+      .then((response) => response.json())
+      .then((data) => {
+        setPatients(data)
+        setLoading(false)
+      })
+  }, [])
 
   const [search, setSearch] = useState("")
   const [name, setName] = useState("")
@@ -31,16 +24,30 @@ useEffect(() => {
     patient.name.toLowerCase().includes(search.toLowerCase())
   )
 
-  const handleAddPatient = () => {
-    const newPatient = { id: Date.now(), name: name, age: age }
-    setPatients([...patients, newPatient])
-    setName("")
-    setAge("")
-  }
+    const handleAddPatient = () => {
+      fetch('https://localhost:7172/api/patient', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name, age: age })
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          setPatients([...patients, data])
+          setName("")
+          setAge("")
+        })
+    }
+  
 
-  const handleDeletePatient = (id) => {
-    setPatients(patients.filter((patient) => patient.id !== id))
-  }
+    const handleDeletePatient = (id) => {
+      fetch(`https://localhost:7172/api/patient/${id}`, {
+        method: 'DELETE'
+      })
+        .then(() => {
+          setPatients(patients.filter((patient) => patient.id !== id))
+        })
+    }
+
 
   const startEditing = (patient) => {
     setEditingId(patient.id)
@@ -48,16 +55,24 @@ useEffect(() => {
     setAge(patient.age)
   }
 
-  const handleUpdatePatient = () => {
-    setPatients(
-      patients.map((patient) =>
-        patient.id === editingId ? { ...patient, name: name, age: age } : patient
-      )
-    )
-    setEditingId(null)
-    setName("")
-    setAge("")
-  }
+    const handleUpdatePatient = () => {
+      fetch(`https://localhost:7172/api/patient/${editingId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: editingId, name: name, age: age })
+      })
+        .then((response) => response.json())
+        .then((updatedPatient) => {
+          setPatients(
+            patients.map((patient) =>
+              patient.id === editingId ? updatedPatient : patient
+            )
+          )
+          setEditingId(null)
+          setName("")
+          setAge("")
+        })
+    }
 
   if (loading) {
     return <p>Loading patients...</p>
@@ -119,5 +134,6 @@ useEffect(() => {
     </div>
   )
 }
+
 
 export default PatientList

@@ -8,15 +8,22 @@ function Appointments() {
   const [doctors, setDoctors] = useState([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    fetch('https://jsonplaceholder.typicode.com/users')
-      .then((response) => response.json())
-      .then((data) => {
-        setPatients(data.slice(0, 5))
-        setDoctors(data.slice(5, 10))
-        setLoading(false)
-      })
-  }, [])
+    useEffect(() => {
+      fetch('https://localhost:7172/api/patient')
+        .then((response) => response.json())
+        .then((data) => {
+          setPatients(data)
+        })
+    }, [])
+
+    useEffect(() => {
+      fetch('https://localhost:7172/api/doctor')
+        .then((response) => response.json())
+        .then((data) => {
+          setDoctors(data)
+          setLoading(false)
+        })
+    }, [])
 
   const handleAddAppointment = (newAppointment) => {
     setAppointments([
