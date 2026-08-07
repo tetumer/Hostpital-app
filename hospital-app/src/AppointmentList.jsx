@@ -1,4 +1,7 @@
-function AppointmentList({ appointments, patients, doctors }) {
+function AppointmentList({ appointments, patients, doctors, onDelete, onUpdate }) {
+  if (appointments.length === 0) {
+    return <p>No appointments found.</p>
+  }
   return (
     <div>
       <h2>Appointments</h2>

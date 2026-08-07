@@ -5,58 +5,92 @@ function DoctorList() {
   const [doctors, setDoctors] = useState([])
   const [loading, setLoading] = useState(true)
   const [hoveredId, setHoveredId] = useState(null)
+  const [age, setAge] = useState("")
+  const [search, setSearch] = useState("")
+  const [name, setName] = useState("")
+  const [specialization, setSpecialization] = useState("")
+  const [editingId, setEditingId] = useState(null)
 
   useEffect(() => {
     fetch('https://localhost:7172/api/doctor')
       .then((response) => response.json())
       .then((data) => {
-        const formatted = data.map((item) => ({
-          id: item.id,
-          name: item.name,
-          specialization: item.specialization,
-          availability: item.availability,
-        }))
-        setDoctors(formatted)
+        setDoctors(data)
         setLoading(false)
       })
   }, [])
-  
-
-  const [search, setSearch] = useState("")
-  const [name, setName] = useState("")
-  const [specialization, setSpecialization] = useState("")
-  const [editingId, setEditingId] = useState(null)
 
   const filteredDoctors = doctors.filter((doctor) =>
     doctor.name.toLowerCase().includes(search.toLowerCase())
   )
 
   const handleAddDoctor = () => {
-    const newDoctor = { id: Date.now(), name: name, specialization: specialization, availability: "Available" }
-    setDoctors([...doctors, newDoctor])
-    setName("")
-    setSpecialization("")
-  }
+  fetch('https://localhost:7172/api/doctor', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: name, age: Number(age), specialization: specialization, availability: "Available" })
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      setDoctors([...doctors, data])
+      setName("")
+      setAge("")
+      setSpecialization("")
+    })
+}
 
-  const handleDeleteDoctor = (id) => {
-    setDoctors(doctors.filter((doctor) => doctor.id !== id))
-  }
+    const handleDeleteDoctor = (id) => {
+    fetch(`https://localhost:7172/api/doctor/${id}`, {
+      method: 'DELETE'
+    })
+      .then(() => {
+        setDoctors(doctors.filter((doctor) => doctor.id !== id))
+      })
+
+    }
 
   const startEditing = (doctor) => {
     setEditingId(doctor.id)
     setName(doctor.name)
+    setAge(doctor.age)
     setSpecialization(doctor.specialization)
   }
 
   const handleUpdateDoctor = () => {
-    setDoctors(
-      doctors.map((doctor) =>
-        doctor.id === editingId ? { ...doctor, name: name, specialization: specialization } : doctor
-      )
-    )
-    setEditingId(null)
-    setName("")
-    setSpecialization("")
+    fetch(`https://localhost:7172/api/doctor/${editingId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: editingId, name: name, age: age, specialization: specialization })
+    })
+      .then((response) => response.json())
+      .then((updatedDoctor) => {
+        setDoctors(
+          doctors.map((doctor) =>
+            doctor.id === editingId ? updatedDoctor : doctor
+          )
+        )
+        setEditingId(null)
+        setName("")
+        setAge("")
+        setSpecialization("")
+      })
+  }
+
+  const handleToggleAvailability = (doctorId, currentAvailability) => {
+    const newAvailability = currentAvailability === "Available" ? "Not Available" : "Available"
+    fetch(`https://localhost:7172/api/doctor/${doctorId}/availability`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ availability: newAvailability })
+    })
+      .then((response) => response.json())
+      .then((updatedDoctor) => {
+        setDoctors(
+          doctors.map((doctor) =>
+            doctor.id === doctorId ? updatedDoctor : doctor
+          )
+        )
+      })
   }
 
   if (loading) {
@@ -91,6 +125,9 @@ function DoctorList() {
             {hoveredId === doctor.id && (
               <div style={{ border: '1px solid black', padding: '5px' }}>
                 <p>Availability: {doctor.availability}</p>
+                <button onClick={() => handleToggleAvailability(doctor.id, doctor.availability)}>
+                  Toggle Availability
+                </button>
               </div>
             )}
           </li>
@@ -103,6 +140,12 @@ function DoctorList() {
         placeholder="Name"
         value={name}
         onChange={(e) => setName(e.target.value)}
+      />
+      <input
+        type="text"
+        placeholder="Age"
+        value={age}
+        onChange={(e) => setAge(e.target.value)}
       />
       <input
         type="text"

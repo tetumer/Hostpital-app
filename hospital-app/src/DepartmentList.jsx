@@ -6,19 +6,15 @@ function DepartmentList() {
   const [loading, setLoading] = useState(true)
   const [hoveredId, setHoveredId] = useState(null)
 
-useEffect(() => {
-  fetch('https://localhost:7172/api/department')
-    .then((response) => response.json())
-    .then((data) => {
-      const formatted = data.map((item) => ({
-        id: item.id,
-        name: item.name,
-        status: "Good",
-      }))
-      setDepartments(formatted)
-      setLoading(false)
-    })
-}, [])
+  useEffect(() => {
+      fetch('https://localhost:7172/api/department')
+        .then((response) => response.json())
+        .then((data) => {
+          setDepartments(data)
+          setLoading(false)
+        })
+    }, [])
+
 
   const [search, setSearch] = useState("")
   const [name, setName] = useState("")
@@ -28,30 +24,50 @@ useEffect(() => {
     department.name.toLowerCase().includes(search.toLowerCase())
   )
 
-  const handleAddDepartment = () => {
-    const newDepartment = { id: Date.now(), name: name }
-    setDepartments([...departments, newDepartment])
-    setName("")
-  }
+      const handleAddDepartment = () => {
+      fetch('https://localhost:7172/api/department', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name })
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          setDepartments([...departments, data])
+          setName("")
+        })
+    }
 
-  const handleDeleteDepartment = (id) => {
-    setDepartments(departments.filter((department) => department.id !== id))
-  }
+     const handleDeleteDepartment = (id) => {
+      fetch(`https://localhost:7172/api/department/${id}`, {
+        method: 'DELETE'
+      })
+        .then(() => {
+          setDepartments(departments.filter((department) => department.id !== id))
+        })
+    }
 
   const startEditing = (department) => {
     setEditingId(department.id)
     setName(department.name)
   }
 
-  const handleUpdateDepartment = () => {
-    setDepartments(
-      departments.map((department) =>
-        department.id === editingId ? { ...department, name: name} : department
-      )
-    )
-    setEditingId(null)
-    setName("")
-  }
+      const handleUpdateDepartment = () => {
+      fetch(`https://localhost:7172/api/department/${editingId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: editingId, name: name })
+      })
+        .then((response) => response.json())
+        .then((updatedDepartment) => {
+          setDepartments(
+            departments.map((department) =>
+              department.id === editingId ? updatedDepartment : department
+            )
+          )
+          setEditingId(null)
+          setName("")
+        })
+    }
 
   if (loading) {
     return <p>Loading Department...</p>

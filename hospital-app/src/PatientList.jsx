@@ -5,20 +5,20 @@ function PatientList() {
   const [patients, setPatients] = useState([])
   const [loading, setLoading] = useState(true)
   const [hoveredId, setHoveredId] = useState(null)
-
-  useEffect(() => {
-    fetch('https://localhost:7172/api/patient')
-      .then((response) => response.json())
-      .then((data) => {
-        setPatients(data)
-        setLoading(false)
-      })
-  }, [])
-
   const [search, setSearch] = useState("")
   const [name, setName] = useState("")
   const [age, setAge] = useState("")
+  const [bloodGroup, setBloodGroup] = useState("")
   const [editingId, setEditingId] = useState(null)
+    
+  useEffect(() => {
+      fetch('https://localhost:7172/api/patient')
+        .then((response) => response.json())
+        .then((data) => {
+          setPatients(data)
+          setLoading(false)
+        })
+    }, [])
 
   const filteredPatients = patients.filter((patient) =>
     patient.name.toLowerCase().includes(search.toLowerCase())
@@ -28,13 +28,14 @@ function PatientList() {
       fetch('https://localhost:7172/api/patient', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name, age: age })
+        body: JSON.stringify({ name: name, age: age, bloodGroup: bloodGroup })
       })
         .then((response) => response.json())
         .then((data) => {
           setPatients([...patients, data])
           setName("")
           setAge("")
+          setBloodGroup("")
         })
     }
   
@@ -59,7 +60,7 @@ function PatientList() {
       fetch(`https://localhost:7172/api/patient/${editingId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: editingId, name: name, age: age })
+        body: JSON.stringify({ id: editingId, name: name, age: age, bloodGroup: "" })
       })
         .then((response) => response.json())
         .then((updatedPatient) => {
@@ -124,6 +125,12 @@ function PatientList() {
         placeholder="Age"
         value={age}
         onChange={(e) => setAge(e.target.value)}
+      />
+      <input
+        type="text"
+        placeholder="Blood Group"
+        value={bloodGroup}
+        onChange={(e) => setBloodGroup(e.target.value)}
       />
 
       {editingId ? (
