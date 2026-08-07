@@ -1,4 +1,6 @@
-function BillList({ bill, patients, doctors }) {
+import BillForm from "./BillForm"
+
+function BillList({ bill,onEdit,onUpdate,onDelete, patients, doctors }) {
   return (
     <div>
       <h2>Bills</h2>
@@ -26,9 +28,13 @@ function BillList({ bill, patients, doctors }) {
                 <hr />
                 <strong>Total: {total} Tk</strong>                                  
             </li>
+            
           )
         })}
       </ul>
+          <button onClick={() => onDelete(appt.id)}>Delete</button>
+          <button onClick={() => onEdit(appt)}>Edit</button>
+    
     </div>
   )
 }

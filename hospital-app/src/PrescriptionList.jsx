@@ -6,6 +6,8 @@ function PrescriptionList() {
     const [doctors,setDoctors] = useState([])
     const [loading, setLoading] = useState(true)
     const [patients,setPatients] = useState([])
+    const [editingId, setEditingId] = useState(null)
+    const [search, setSearch] = useState("")
     const [prescriptionForm,setPrescriptionForm] = useState({
     patientId: "",
     doctorId: "",
@@ -13,7 +15,6 @@ function PrescriptionList() {
     dosage: "",
     duration: "",
 })
-
 
   useEffect(() => {
     fetch('https://localhost:7172/api/patient')
@@ -32,25 +33,77 @@ function PrescriptionList() {
       })
   }, [])
 
+
     if (loading) {
     return <p>Loading Page...</p>
   }
 
-    const handleAddPrescriptions = () => {
-    const newPrescriptions = {patientId: prescriptionForm.patientId, doctorId: prescriptionForm.doctorId, medicine:  prescriptionForm.medicine , dosage: prescriptionForm.dosage, duration: prescriptionForm.duration  }
-    setPrescriptions([...prescriptions, newPrescriptions])
+      const handleAddPrescriptions = () => {
+      fetch('https://localhost:7172/api/prescription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ patientId: Number(prescriptionForm.patientId), doctorId: Number(prescriptionForm.doctorId), medicine: prescriptionForm.medicine, dosage: prescriptionForm.dosage, duration: prescriptionForm.duration })
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          setPrescriptions([...prescriptions, data])
+          setPrescriptionForm({
+            patientId: "",
+            doctorId: "",
+            medicine: "",
+            dosage: "",
+            duration: "",
+          })
+        })
+    }
+     const handleDeletePrescription = (id) => {
+      fetch(`https://localhost:7172/api/prescription/${id}`, {
+        method: 'DELETE'
+      })
+        .then(() => {
+          setPrescriptions(prescriptions.filter((prescription) => prescription.id !== id))
+        })
+    }
+
+
+    const startEditing = (prescription) => {
+    setEditingId(prescription.id)
     setPrescriptionForm({
-        patientId: "",
-        doctorId: "",
-        medicine: "",
-        dosage: "",
-        duration: "",
+      patientId: prescription.patientId,
+      doctorId: prescription.doctorId,
+      medicine: prescription.medicine,
+      dosage: prescription.dosage,
+      duration: prescription.duration
     })
   }
+      const handleUpdatePrescription = () => {
+      fetch(`https://localhost:7172/api/prescription/${editingId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: editingId, patientId: Number(prescriptionForm.patientId), doctorId: Number(prescriptionForm.doctorId), medicine: prescriptionForm.medicine, dosage: prescriptionForm.dosage, duration: prescriptionForm.duration })
+      })
+        .then((response) => response.json())
+        .then((updatedPrescription) => {
+          setPrescriptions(
+            prescriptions.map((prescription) =>
+              prescription.id === editingId ? updatedPrescription : prescription
+            )
+          )
+          setEditingId(null)
+          setPrescriptionForm({
+            patientId: "",
+            doctorId: "",
+            medicine: "",
+            dosage: "",
+            duration: "",
+          })
+        })
+    }
+
 
   return (
     <div>
-      <h1>Make prescirption</h1>
+      <h2>{editingId ? "Edit Prescription" : "Add Prescription"}</h2>
 
   
     <select
@@ -119,10 +172,12 @@ function PrescriptionList() {
         }
     />
 
-    <button onClick={handleAddPrescriptions}>Add Prescription</button>
+    <button onClick={editingId ? handleUpdatePrescription : handleAddPrescriptions}>
+      {editingId ? "Update Prescription" : "Add Prescription"}
+    </button>
 
     <div>
-      <h2>Pescriontions</h2>
+      <h2>Prescriptions</h2>
       <ul>
         {prescriptions.map((appt) => {
           const patient = patients.find((p) => p.id === Number(appt.patientId))
@@ -130,6 +185,8 @@ function PrescriptionList() {
           return (
             <li key={appt.id}>
               {patient?.name} with {doctor?.name} — {appt.medicine} at {appt.dosage} — {appt.duration}
+              <button onClick={() => handleDeletePrescription(appt.id)}>Delete</button>
+              <button onClick={() => startEditing(appt)}>Edit</button>
             </li>
           )
         })}
