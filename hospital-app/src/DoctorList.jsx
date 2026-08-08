@@ -3,13 +3,19 @@ import { Link } from 'react-router-dom'
 
 function DoctorList() {
   const [doctors, setDoctors] = useState([])
+  const [doctorForm, setDoctorForm] = useState({
+    name: "", dateOfBirth: "", specialization: "", 
+    gender: "", phone: "", email: "", address: "",
+    licenseNumber: "", department: "", availability: ""
+  })
   const [loading, setLoading] = useState(true)
   const [hoveredId, setHoveredId] = useState(null)
-  const [age, setAge] = useState("")
   const [search, setSearch] = useState("")
-  const [name, setName] = useState("")
   const [specialization, setSpecialization] = useState("")
   const [editingId, setEditingId] = useState(null)
+
+
+
 
   useEffect(() => {
     fetch('https://localhost:7172/api/doctor')
@@ -20,6 +26,8 @@ function DoctorList() {
       })
   }, [])
 
+  console.log(doctors)
+
   const filteredDoctors = doctors.filter((doctor) =>
     doctor.name.toLowerCase().includes(search.toLowerCase())
   )
@@ -28,14 +36,23 @@ function DoctorList() {
   fetch('https://localhost:7172/api/doctor', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name: name, age: Number(age), specialization: specialization, availability: "Available" })
+    body: JSON.stringify({ name: doctorForm.name, dateOfBirth: doctorForm.dateOfBirth, specialization: doctorForm.specialization, gender: doctorForm.gender, phone: doctorForm.phone, email: doctorForm.email, address: doctorForm.address, licenseNumber: doctorForm.licenseNumber, department: doctorForm.department, availability: doctorForm.availability })
   })
     .then((response) => response.json())
     .then((data) => {
       setDoctors([...doctors, data])
-      setName("")
-      setAge("")
-      setSpecialization("")
+      setDoctorForm({
+        name: "",
+        dateOfBirth: "",
+        specialization: "",
+        gender: "",
+        phone: "",
+        email: "",
+        address: "",
+        licenseNumber: "",
+        department: "",
+        availability: ""
+      })
     })
 }
 
@@ -51,16 +68,27 @@ function DoctorList() {
 
   const startEditing = (doctor) => {
     setEditingId(doctor.id)
-    setName(doctor.name)
-    setAge(doctor.age)
-    setSpecialization(doctor.specialization)
+    setDoctorForm({
+      name: doctor.name,
+      dateOfBirth: doctor.dateOfBirth,
+      gender: doctor.gender,
+      phone: doctor.phone,
+      email: doctor.email,
+      address: doctor.address,
+      licenseNumber: doctor.licenseNumber,
+      department: doctor.department,
+      status: doctor.status,
+      specialization: doctor.specialization,
+      availability: doctor.availability
+
+    })
   }
 
   const handleUpdateDoctor = () => {
     fetch(`https://localhost:7172/api/doctor/${editingId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: editingId, name: name, age: age, specialization: specialization })
+      body: JSON.stringify({ id: editingId, ...doctorForm })
     })
       .then((response) => response.json())
       .then((updatedDoctor) => {
@@ -70,9 +98,18 @@ function DoctorList() {
           )
         )
         setEditingId(null)
-        setName("")
-        setAge("")
-        setSpecialization("")
+        setDoctorForm({
+          name: "",
+          dateOfBirth: "",
+          gender: "",
+          phone: "",
+          email: "",
+          address: "",
+          licenseNumber: "",
+          department: "",
+          availability: "",
+          specialization: "",
+        })
       })
   }
 
@@ -138,21 +175,59 @@ function DoctorList() {
       <input
         type="text"
         placeholder="Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
+        value={doctorForm.name}
+        onChange={(e) => setDoctorForm({ ...doctorForm, name: e.target.value })}
       />
       <input
-        type="text"
-        placeholder="Age"
-        value={age}
-        onChange={(e) => setAge(e.target.value)}
+        type="date"
+        placeholder="Date of Birth"
+        value={doctorForm.dateOfBirth}
+        onChange={(e) => setDoctorForm({ ...doctorForm, dateOfBirth: e.target.value })}
       />
       <input
         type="text"
         placeholder="Specialization"
-        value={specialization}
-        onChange={(e) => setSpecialization(e.target.value)}
+        value={doctorForm.specialization}
+        onChange={(e) => setDoctorForm({ ...doctorForm, specialization: e.target.value })}
       />
+        <input
+        type="text"
+        placeholder="gender"
+        value={doctorForm.gender}
+        onChange={(e) => setDoctorForm({ ...doctorForm, gender: e.target.value })}
+      />
+        <input
+                  type="text"
+                  placeholder="Phone"
+                  value={doctorForm.phone}
+                  onChange={(e) => setDoctorForm({ ...doctorForm, phone: e.target.value })}
+      />
+      <input
+                  type="text"
+                  placeholder="Email"
+                  value={doctorForm.email}
+                  onChange={(e) => setDoctorForm({ ...doctorForm, email: e.target.value })}
+      />  
+      <input
+                  type="text"
+                  placeholder="Address"
+                  value={doctorForm.address}
+                  onChange={(e) => setDoctorForm({ ...doctorForm, address: e.target.value })}
+      />
+      <input
+                  type="text"
+                  placeholder="License Number"
+                  value={doctorForm.licenseNumber}
+                  onChange={(e) => setDoctorForm({ ...doctorForm, licenseNumber: e.target.value })}
+      />
+      <input
+                  type="text"
+                  placeholder="Department"
+                  value={doctorForm.department}
+                  onChange={(e) => setDoctorForm({ ...doctorForm, department: e.target.value })}
+      />
+
+
       {editingId ? (
         <button onClick={handleUpdateDoctor}>Update Doctor</button>
       ) : (
