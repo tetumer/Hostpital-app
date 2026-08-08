@@ -1,0 +1,123 @@
+.settings-container {
+  max-width: 900px;
+  margin: 30px auto;
+  padding: 24px 28px;
+  border-radius: 10px;
+  background-color: #f7f7f8;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+  font-family: system-ui, sans-serif;
+}
+
+.settings-container h1 {
+  font-size: 22px;
+  margin-bottom: 2px;
+}
+
+.settings-container h2 {
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+.settings-user-info {
+  color: #666;
+  margin-bottom: 18px;
+  font-size: 13px;
+}
+
+.settings-row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin-bottom: 18px;
+}
+
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 160px;
+}
+
+.settings-section label {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.settings-section input,
+.settings-section select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #d0d0d0;
+  font-size: 13px;
+  background-color: white;
+}
+
+.settings-divider {
+  height: 1px;
+  background-color: #e0e0e0;
+  margin: 18px 0 16px;
+}
+
+.theme-toggle-btn,
+.save-password-btn {
+  padding: 7px 14px;
+  border-radius: 6px;
+  border: none;
+  background-color: #2b2b2b;
+  color: white;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background-color 0.2s;
+  width: fit-content;
+  margin-top: 2px;
+}
+
+.theme-toggle-btn:hover,
+.save-password-btn:hover {
+  background-color: #444;
+}
+
+.settings-message {
+  font-size: 13px;
+  margin-top: 4px;
+  color: #b00020;
+}
+
+/* Dark mode overrides */
+body.dark .settings-container {
+  background-color: #262626;
+  color: #eee;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+body.dark .settings-container h1,
+body.dark .settings-container h2,
+body.dark .settings-section label {
+  color: #eee;
+}
+
+body.dark .settings-user-info {
+  color: #aaa;
+}
+
+body.dark .settings-section input,
+body.dark .settings-section select {
+  background-color: #333;
+  color: #eee;
+  border-color: #555;
+}
+
+body.dark .settings-divider {
+  background-color: #444;
+}
+
+body.dark .theme-toggle-btn,
+body.dark .save-password-btn {
+  background-color: #555;
+}
+
+body.dark .theme-toggle-btn:hover,
+body.dark .save-password-btn:hover {
+  background-color: #6a6a6a;
+}

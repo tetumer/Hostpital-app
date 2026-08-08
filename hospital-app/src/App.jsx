@@ -1,17 +1,19 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import PatientList from './PatientList'
-import PatientDetails from './PatientDetails'
-import DoctorList from './DoctorList'
-import DoctorDetails from './DoctorDetails'
-import Appointments from './Appointments'
-import DepartmentList from './DepartmentList'
-import DepartmentDetails from './DepartmentDetails'
-import PrescriptionList from './PrescriptionList'
-import LabReports from './LabReports'
-import Dashboard from './Dashboard'
-import Bill from './Bill'
-import Reception from './Reception'
-import Login from './Login'
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import PatientList from "./PatientList";
+import PatientDetails from "./PatientDetails";
+import DoctorList from "./DoctorList";
+import DoctorDetails from "./DoctorDetails";
+import Appointments from "./Appointments";
+import DepartmentList from "./DepartmentList";
+import DepartmentDetails from "./DepartmentDetails";
+import PrescriptionList from "./PrescriptionList";
+import LabReports from "./LabReports";
+import Dashboard from "./Dashboard";
+import Bill from "./Bill";
+import Reception from "./Reception";
+import Login from "./Login";
+import Settings from "./Settings";
+import "./App.css";
 
 function App() {
   return (
@@ -30,9 +32,10 @@ function App() {
         <Route path="/bill" element={<Bill />} />
         <Route path="/reception" element={<Reception />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/settings" element={<Settings />} />
       </Routes>
     </BrowserRouter>
-  )
+  );
 }
 
-export default App
+export default App;
