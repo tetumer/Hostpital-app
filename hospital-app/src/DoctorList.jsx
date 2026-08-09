@@ -29,8 +29,8 @@ function DoctorList() {
   }, [])
 
   const filteredDoctors = doctors.filter((doctor) =>
-    doctor.name.toLowerCase().includes(search.toLowerCase())
-  )
+  doctor.name?.toLowerCase().includes(search.toLowerCase())
+ )
 
   const handleAddDoctor = () => {
   fetch('https://localhost:7172/api/doctor', {
@@ -121,22 +121,20 @@ function DoctorList() {
   }
 
 
-  const handleToggleAvailability = (doctorId, currentAvailability) => {
-    const newAvailability = currentAvailability === "Available" ? "Not Available" : "Available"
-    fetch(`https://localhost:7172/api/doctor/${doctorId}/availability`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ availability: newAvailability })
-    })
-      .then((response) => response.json())
-      .then((updatedDoctor) => {
-        setDoctors(
-          doctors.map((doctor) =>
-            doctor.id === doctorId ? updatedDoctor : doctor
-          )
+  const handleToggleAvailability = (doctorId) => {
+  fetch(`https://localhost:7172/api/doctor/${doctorId}/availability`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' }
+  })
+    .then((response) => response.json())
+    .then((updatedDoctor) => {
+      setDoctors(
+        doctors.map((doctor) =>
+          doctor.id === doctorId ? updatedDoctor : doctor
         )
-      })
-  }
+      )
+    })
+}
 
   if (loading) {
     return <p>Loading doctors...</p>
@@ -169,9 +167,8 @@ function DoctorList() {
 
             {hoveredId === doctor.id && (
               <div style={{ border: '1px solid black', padding: '5px' }}>
-                <p>Availability: {doctor.availability}</p>
-                <button onClick={() => handleToggleAvailability(doctor.id, doctor.availability)}>
-                  Toggle Availability
+                <button onClick={() => handleToggleAvailability(doctor.id)}>
+                     {doctor.availability ? "Available" : "Not Available"}
                 </button>
               </div>
             )}

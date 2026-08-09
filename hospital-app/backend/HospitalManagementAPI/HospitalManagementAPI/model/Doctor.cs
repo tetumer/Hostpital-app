@@ -12,14 +12,14 @@
         public required string Address { get; set; }
         public required string LicenseNumber { get; set; }
         public required string Department { get; set; }
-        public DateTime  ArrivalTime { get; set; }
-        public DateTime  DepurtureTime { get; set; }
-        public  string Availability { get; set; }
+        public TimeOnly ArrivalTime { get; set; }
+        public TimeOnly DepurtureTime { get; set; }
+        public bool Availability { get; set; } = true;
     }
 
     public class AvailabilityUpdate
     {
-        public required string Availability { get; set; }
+        public bool Availability { get; set; }
     }
 }
 

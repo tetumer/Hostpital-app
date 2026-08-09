@@ -1,125 +1,104 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
 
 function DepartmentList() {
-  const [departments, setDepartments] = useState([])
+  const [doctors, setDoctors] = useState([])
   const [loading, setLoading] = useState(true)
-  const [hoveredId, setHoveredId] = useState(null)
+  const [search, setSearch] = useState("")
+  const [selectedDepartment, setSelectedDepartment] = useState(null)
 
   useEffect(() => {
-      fetch('https://localhost:7172/api/department')
-        .then((response) => response.json())
-        .then((data) => {
-          setDepartments(data)
-          setLoading(false)
-        })
-    }, [])
+    fetch('https://localhost:7172/api/doctor')
+      .then((response) => response.json())
+      .then((data) => {
+        setDoctors(data)
+        setLoading(false)
+      })
+  }, [])
 
+  const departments = [...new Set(
+    doctors.map((doctor) => doctor.department)
+  )]
 
-  const [search, setSearch] = useState("")
-  const [name, setName] = useState("")
-  const [editingId, setEditingId] = useState(null)
-
-  const filteredDepartment= departments.filter((department) =>
-    department.name.toLowerCase().includes(search.toLowerCase())
+  const filteredDepartments = departments.filter((department) =>
+    department?.toLowerCase().includes(search.toLowerCase())
   )
 
-      const handleAddDepartment = () => {
-      fetch('https://localhost:7172/api/department', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name })
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          setDepartments([...departments, data])
-          setName("")
-        })
-    }
-
-     const handleDeleteDepartment = (id) => {
-      fetch(`https://localhost:7172/api/department/${id}`, {
-        method: 'DELETE'
-      })
-        .then(() => {
-          setDepartments(departments.filter((department) => department.id !== id))
-        })
-    }
-
-  const startEditing = (department) => {
-    setEditingId(department.id)
-    setName(department.name)
-  }
-
-      const handleUpdateDepartment = () => {
-      fetch(`https://localhost:7172/api/department/${editingId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: editingId, name: name })
-      })
-        .then((response) => response.json())
-        .then((updatedDepartment) => {
-          setDepartments(
-            departments.map((department) =>
-              department.id === editingId ? updatedDepartment : department
-            )
-          )
-          setEditingId(null)
-          setName("")
-        })
-    }
-
   if (loading) {
-    return <p>Loading Department...</p>
+    return <p>Loading departments...</p>
   }
+
   return (
     <div>
-      <h1>Department List</h1>
+      <h1>Departments</h1>
 
       <input
         type="text"
-        placeholder="Search Department..."
+        placeholder="Search department..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
 
-      <ul>
-        {filteredDepartment.map((department) => (
-          <li
-            key={department.id}
-            onMouseEnter={() => setHoveredId(department.id)}
-            onMouseLeave={() => setHoveredId(null)}
-            style={{ position: 'relative' }}
-          >
-            <Link to={`/departments/${department.id}`}>
-              {department.name} — {department.status} 
-            </Link>
-            <button onClick={() => handleDeleteDepartment(department.id)}>Delete</button>
-            <button onClick={() => startEditing(department)}>Edit</button>
+      <div>
+        {filteredDepartments.map((department) => {
 
-            {hoveredId === department.id && (
-              <div style={{ border: '1px solid black', padding: '5px' }}>
-                <p>Department: {department.name}</p>
-                <p>Status: {department.status}</p>
-              </div>
-            )}
-          </li>
-        ))}
-      </ul>
+          const departmentDoctors = doctors.filter(
+            (doctor) => doctor.department === department
+          )
 
-      <h2>{editingId ? "Edit Department" : "Add Department"}</h2>
-      <input
-        type="text"
-        placeholder="Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
+          const isSelected = selectedDepartment === department
 
-      {editingId ? (
-        <button onClick={handleUpdateDepartment}>Update Department</button>
-      ) : (
-        <button onClick={handleAddDepartment}>Add Department</button>
-      )}
+          return (
+            <div
+              key={department}
+              onClick={() =>
+                setSelectedDepartment(
+                  isSelected ? null : department
+                )
+              }
+              style={{
+                border: '1px solid black',
+                padding: '15px',
+                margin: '10px 0',
+                cursor: 'pointer'
+              }}
+            >
+              <h2>{department}</h2>
+
+              <p>
+                {departmentDoctors.length}{' '}
+                {departmentDoctors.length === 1
+                  ? 'Doctor'
+                  : 'Doctors'}
+              </p>
+
+              {isSelected && (
+                <div>
+                  <h3>Doctors</h3>
+
+                  {departmentDoctors.map((doctor) => (
+                    <div key={doctor.id}>
+                      <p>
+                        <strong>{doctor.name}</strong>
+                      </p>
+
+                      <p>
+                        Specialization: {doctor.specialization}
+                      </p>
+
+                      <p>
+                        Availability:{' '}
+                        {doctor.availability
+                          ? 'Available'
+                          : 'Not Available'}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }

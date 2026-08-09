@@ -3,6 +3,7 @@ using System;
 using HospitalManagementAPI;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HospitalManagementAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260809115805_SyncModelChanges")]
+    partial class SyncModelChanges
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.10");
@@ -132,11 +135,12 @@ namespace HospitalManagementAPI.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<TimeOnly>("ArrivalTime")
+                    b.Property<DateTime>("ArrivalTime")
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("Availability")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("Availability")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<DateOnly>("DateOfBirth")
                         .HasColumnType("TEXT");
@@ -145,7 +149,7 @@ namespace HospitalManagementAPI.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<TimeOnly>("DepurtureTime")
+                    b.Property<DateTime>("DepurtureTime")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Email")

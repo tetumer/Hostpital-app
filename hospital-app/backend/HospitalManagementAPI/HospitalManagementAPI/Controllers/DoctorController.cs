@@ -35,7 +35,7 @@ namespace HospitalManagementAPI.Controllers
         [HttpPost]
         public IActionResult Create(Doctor newDoctor)
         {
-            newDoctor.Availability = "Available";
+            newDoctor.Availability = true;
             _context.Doctors.Add(newDoctor);
             _context.SaveChanges();
             return Ok(newDoctor);
@@ -77,13 +77,14 @@ namespace HospitalManagementAPI.Controllers
 
         }
         [HttpPatch("{id}/availability")]
-        public IActionResult ToggleAvailability(int id, [FromBody] AvailabilityUpdate update)
+        public IActionResult ToggleAvailability(int id)
         {
             var doctor = _context.Doctors.Find(id);
             if (doctor == null) return NotFound();
 
-            doctor.Availability = update.Availability;
+            doctor.Availability = !doctor.Availability;
             _context.SaveChanges();
+
             return Ok(doctor);
         }
     }

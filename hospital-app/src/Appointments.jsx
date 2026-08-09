@@ -13,6 +13,7 @@ function Appointments() {
   const [date, setDate] = useState("")
   const [time, setTime] = useState("")
   const [status, setStatus] = useState("")
+  const [formKey, setFormKey] = useState(0)
 
     useEffect(() => {
       fetch('https://localhost:7172/api/patient')
@@ -31,23 +32,42 @@ function Appointments() {
         })
     }, [])
 
-    const handleAddAppointment = (newAppointment) => {
-      fetch('https://localhost:7172/api/appointment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          patientId: Number(newAppointment.patientId),
-          doctorId: Number(newAppointment.doctorId),
-          date: newAppointment.date,
-          time: newAppointment.time,
-          status: newAppointment.status
-        })
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          setAppointments([...appointments, data])
-        })
-    }
+    useEffect(() => {
+    fetch('https://localhost:7172/api/appointment')
+    .then((response) => response.json())
+    .then((data) => {
+      setAppointments(data)
+    })
+    }, [])
+
+const handleAddAppointment = (newAppointment) => {
+  fetch('https://localhost:7172/api/appointment', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      patientId: Number(newAppointment.patientId),
+      doctorId: Number(newAppointment.doctorId),
+      date: newAppointment.date,
+      time: newAppointment.time,
+      status: newAppointment.status
+    })
+  })
+    .then(async (response) => {
+      if (!response.ok) {
+        const message = await response.text()
+        throw new Error(message)
+      }
+
+      return response.json()
+    })
+    .then((data) => {
+      setAppointments([...appointments, data])
+      setFormKey(formKey + 1)
+    })
+    .catch((error) => {
+      alert(error.message)
+    })
+}
     const handleUpdateAppointment = () => {
     fetch(`https://localhost:7172/api/appointment/${editingId}`, {
       method: 'PUT',
@@ -61,11 +81,13 @@ function Appointments() {
             appointment.id === editingId ? updatedAppointment : appointment
           )
         )
-        setEditingId(null)
-        setPatientId("")
-        setDoctorId("")
-        setDate("")
-        setTime("")
+          setAppointment({
+          patientId: "",
+          doctorId: "",
+          date: "",
+          time: "",
+          status: "Scheduled"
+        })
       })
   }
       const handleDeleteAppointment = (id) => {
@@ -87,7 +109,7 @@ function Appointments() {
   return (
     <div>
       <AppointmentList appointments={appointments} patients={patients} doctors={doctors} onDelete={handleDeleteAppointment} onUpdate={handleUpdateAppointment} />
-      <AppointmentForm onAdd={handleAddAppointment} patients={patients} doctors={doctors} />
+      <AppointmentForm onAdd={handleAddAppointment} patients={patients} doctors={doctors} key={formKey} />
     </div>
   )
 }

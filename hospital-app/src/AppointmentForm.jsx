@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
-function AppointmentForm({ onAdd, patients, doctors }) {
+function AppointmentForm({  onAdd, patients, doctors }) {
     const [appointment, setAppointment] = useState({
     patientId: "",
     doctorId: "",

@@ -23,6 +23,19 @@ namespace HospitalManagementAPI.Controllers
         [HttpPost]
         public IActionResult Create(Appointment newAppointment)
         {
+            var sameDayAppointments = _context.Appointments
+                .Where(a => a.DoctorId == newAppointment.DoctorId && a.Date == newAppointment.Date)
+                .ToList();
+
+            var newTime = TimeSpan.Parse(newAppointment.Time);
+
+            var conflict = sameDayAppointments.Any(a =>
+                Math.Abs((TimeSpan.Parse(a.Time) - newTime).TotalMinutes) < 20);
+
+            if (conflict)
+            {
+                return BadRequest("This doctor already has an appointment within 20 minutes of that time.");
+            }
             _context.Appointments.Add(newAppointment);
             _context.SaveChanges();
             return Ok(newAppointment);
@@ -33,6 +46,19 @@ namespace HospitalManagementAPI.Controllers
             var appointment = _context.Appointments.Find(id);
             if (appointment == null) return NotFound();
 
+            var sameDayAppointments = _context.Appointments
+                .Where(a => a.DoctorId == updatedAppointment.DoctorId && a.Date == updatedAppointment.Date && a.Id != id)
+                .ToList();
+
+            var newTime = TimeSpan.Parse(updatedAppointment.Time);
+
+            var conflict = sameDayAppointments.Any(a =>
+                Math.Abs((TimeSpan.Parse(a.Time) - newTime).TotalMinutes) < 20);
+
+            if (conflict)
+            {
+                return BadRequest("This doctor already has an appointment within 20 minutes of that time.");
+            }
             appointment.PatientId = updatedAppointment.PatientId;
             appointment.DoctorId = updatedAppointment.DoctorId;
             appointment.Date = updatedAppointment.Date;
@@ -51,7 +77,5 @@ namespace HospitalManagementAPI.Controllers
             _context.SaveChanges();
             return Ok();
         }
-
-
     }
 }

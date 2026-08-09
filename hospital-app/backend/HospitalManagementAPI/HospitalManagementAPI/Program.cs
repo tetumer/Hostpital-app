@@ -1,7 +1,6 @@
 using HospitalManagementAPI;
 using Microsoft.EntityFrameworkCore;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -19,8 +18,13 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader();
     });
 });
+
+// Use an absolute path based on the project's content root, so the same
+// hospital.db file is used whether you run via "dotnet ef", "dotnet run",
+// or the compiled .exe in bin/Debug — no more duplicate/empty db files.
+var dbPath = Path.Combine(builder.Environment.ContentRootPath, "hospital.db");
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite("Data Source=hospital.db"));
+    options.UseSqlite($"Data Source={dbPath}"));
 
 var app = builder.Build();
 
