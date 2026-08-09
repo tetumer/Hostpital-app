@@ -6,7 +6,9 @@ function DoctorList() {
   const [doctorForm, setDoctorForm] = useState({
     name: "", dateOfBirth: "", specialization: "", 
     gender: "", phone: "", email: "", address: "",
-    licenseNumber: "", department: "", availability: ""
+    licenseNumber: "", department: "", arrivalTime: "",
+    departureTime: "",
+    availability: ""
   })
   const [loading, setLoading] = useState(true)
   const [hoveredId, setHoveredId] = useState(null)
@@ -26,8 +28,6 @@ function DoctorList() {
       })
   }, [])
 
-  console.log(doctors)
-
   const filteredDoctors = doctors.filter((doctor) =>
     doctor.name.toLowerCase().includes(search.toLowerCase())
   )
@@ -35,8 +35,10 @@ function DoctorList() {
   const handleAddDoctor = () => {
   fetch('https://localhost:7172/api/doctor', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name: doctorForm.name, dateOfBirth: doctorForm.dateOfBirth, specialization: doctorForm.specialization, gender: doctorForm.gender, phone: doctorForm.phone, email: doctorForm.email, address: doctorForm.address, licenseNumber: doctorForm.licenseNumber, department: doctorForm.department, availability: doctorForm.availability })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+          name: doctorForm.name, dateOfBirth: doctorForm.dateOfBirth, specialization: doctorForm.specialization, gender: doctorForm.gender, phone: doctorForm.phone, email: doctorForm.email, address: doctorForm.address, licenseNumber: doctorForm.licenseNumber, department: doctorForm.department, arrivalTime: doctorForm.arrivalTime, departureTime: doctorForm.departureTime       
+      })
   })
     .then((response) => response.json())
     .then((data) => {
@@ -50,6 +52,8 @@ function DoctorList() {
         email: "",
         address: "",
         licenseNumber: "",
+        arrivalTime: "",
+        departureTime: "",
         department: "",
         availability: ""
       })
@@ -77,7 +81,8 @@ function DoctorList() {
       address: doctor.address,
       licenseNumber: doctor.licenseNumber,
       department: doctor.department,
-      status: doctor.status,
+      arrivalTime: doctor.arrivalTime,
+      departureTime: doctor.departureTime,
       specialization: doctor.specialization,
       availability: doctor.availability
 
@@ -108,10 +113,13 @@ function DoctorList() {
           licenseNumber: "",
           department: "",
           availability: "",
+          arrivalTime: "",
+          departureTime: "",
           specialization: "",
         })
       })
   }
+
 
   const handleToggleAvailability = (doctorId, currentAvailability) => {
     const newAvailability = currentAvailability === "Available" ? "Not Available" : "Available"
@@ -190,11 +198,11 @@ function DoctorList() {
         value={doctorForm.specialization}
         onChange={(e) => setDoctorForm({ ...doctorForm, specialization: e.target.value })}
       />
-        <input
-        type="text"
-        placeholder="gender"
-        value={doctorForm.gender}
-        onChange={(e) => setDoctorForm({ ...doctorForm, gender: e.target.value })}
+            <input
+            type="text"
+            placeholder="gender"
+            value={doctorForm.gender}
+            onChange={(e) => setDoctorForm({ ...doctorForm, gender: e.target.value })}
       />
         <input
                   type="text"
@@ -213,6 +221,18 @@ function DoctorList() {
                   placeholder="Address"
                   value={doctorForm.address}
                   onChange={(e) => setDoctorForm({ ...doctorForm, address: e.target.value })}
+      />
+      <input
+                  type="time"
+                  placeholder="Arrival Time"
+                  value={doctorForm.arrivalTime}
+                  onChange={(e) => setDoctorForm({ ...doctorForm, arrivalTime: e.target.value })}
+       />
+       <input
+                  type="time"
+                  placeholder="Departure Time"
+                  value={doctorForm.departureTime}
+                  onChange={(e) => setDoctorForm({ ...doctorForm, departureTime: e.target.value })}
       />
       <input
                   type="text"

@@ -56,6 +56,8 @@ namespace HospitalManagementAPI.Controllers
             doctor.Email = updatedDoctor.Email;
             doctor.Address = updatedDoctor.Address;
             doctor.LicenseNumber = updatedDoctor.LicenseNumber;
+            doctor.ArrivalTime = updatedDoctor.ArrivalTime;
+            doctor.DepurtureTime = updatedDoctor.DepurtureTime;
             doctor.Department = updatedDoctor.Department;
             doctor.Availability = updatedDoctor.Availability;
             _context.SaveChanges();

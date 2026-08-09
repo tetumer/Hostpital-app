@@ -12,6 +12,8 @@
         public required string Address { get; set; }
         public required string LicenseNumber { get; set; }
         public required string Department { get; set; }
+        public DateTime  ArrivalTime { get; set; }
+        public DateTime  DepurtureTime { get; set; }
         public  string Availability { get; set; }
     }
 
