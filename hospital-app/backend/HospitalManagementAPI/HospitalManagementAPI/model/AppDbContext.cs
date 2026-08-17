@@ -15,6 +15,7 @@ namespace HospitalManagementAPI
         public DbSet<Billing> Billings { get; set; }
         public DbSet<BloodTest> BloodTests { get; set; }
         public DbSet<User> Users { get; set; }
-       
+        public DbSet<UserSession> UserSessions { get; set; }
+
     }
 }

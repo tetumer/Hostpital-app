@@ -27,13 +27,62 @@ namespace HospitalManagementAPI.Controllers
                 return Unauthorized("Invalid username or password");
             }
 
-            LoginResponse response = new LoginResponse
+            var tokenBytes = System.Security.Cryptography.RandomNumberGenerator.GetBytes(32);
+            var token = Convert.ToBase64String(tokenBytes);
+
+            using var sha256 = System.Security.Cryptography.SHA256.Create();
+
+            var tokenHashBytes = sha256.ComputeHash(
+                System.Text.Encoding.UTF8.GetBytes(token)
+            );
+
+            var tokenHash = Convert.ToBase64String(tokenHashBytes);
+
+            var session = new UserSession
             {
-                Id = user.Id,
-                Username = user.Username,
-                Role = user.Role
+                TokenHash = tokenHash,
+                UserId = user.Id,
+                CreatedAt = DateTime.UtcNow
             };
-            return Ok(response);
+
+            _context.UserSessions.Add(session);
+            _context.SaveChanges();
+
+            return Ok(new LoginResponse
+            {
+                Token = token
+            });
+        }
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            if (!Request.Headers.TryGetValue("Authorization", out var authHeader))
+            {
+                return Unauthorized();
+            }
+
+            var token = authHeader.ToString().Replace("Bearer ", "");
+
+            using var sha256 = System.Security.Cryptography.SHA256.Create();
+
+            var tokenHashBytes = sha256.ComputeHash(
+                System.Text.Encoding.UTF8.GetBytes(token)
+            );
+
+            var tokenHash = Convert.ToBase64String(tokenHashBytes);
+
+            var session = _context.UserSessions
+                .FirstOrDefault(s => s.TokenHash == tokenHash);
+
+            if (session == null)
+            {
+                return Unauthorized();
+            }
+
+            _context.UserSessions.Remove(session);
+            _context.SaveChanges();
+
+            return Ok("Logged out successfully.");
         }
 
         [HttpPut("{id}/password")]

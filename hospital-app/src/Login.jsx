@@ -8,28 +8,34 @@ function Login(){
     const navigate = useNavigate();
 
     const handleLogin = () => {
-        console.log("Trying login with:", username, password)
         fetch('https://localhost:7172/api/user/login', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ Username: username, Password: password })
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                Username: username,
+                Password: password
+            })
         })
             .then((response) => {
-            if (!response.ok) {
-                throw new Error('Invalid username or password')
-            }
-            return response.json()
-            })
-            .then((user) => {
-            console.log('Logged in as:', user);
-            localStorage.setItem("user", JSON.stringify(user));
-            navigate("/dashboard");
+                if (!response.ok) {
+                    throw new Error('Invalid username or password')
+                }
 
+                return response.json()
+            })
+            .then((data) => {
+                console.log("Logged in");
+
+                localStorage.setItem("token", data.token);
+
+                navigate("/dashboard");
             })
             .catch((error) => {
-            alert(error.message)
+                alert(error.message)
             })
-        }
+    }
 
   
 
