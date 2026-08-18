@@ -3,6 +3,7 @@
     public class Doctor
     {
         public int Id { get; set; }
+        public int UserId { get; set; }
         public required string Name { get; set; }
         public DateOnly DateOfBirth { get; set; }
         public required string Gender { get; set; }

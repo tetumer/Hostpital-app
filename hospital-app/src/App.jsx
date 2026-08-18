@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import PatientList from "./PatientList";
+import 'bootstrap/dist/css/bootstrap.min.css'
 import PatientDetails from "./PatientDetails";
 import DoctorList from "./DoctorList";
 import DoctorDetails from "./DoctorDetails";
@@ -11,6 +12,7 @@ import LabReports from "./LabReports";
 import Dashboard from "./Dashboard";
 import Bill from "./Bill";
 import Reception from "./Reception";
+import Register from "./Register"
 import Login from "./Login";
 import Settings from "./Settings";
 import "./App.css";
@@ -33,6 +35,7 @@ function App() {
         <Route path="/reception" element={<Reception />} />
         <Route path="/login" element={<Login />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/register" element={<Register />}/>
       </Routes>
     </BrowserRouter>
   );

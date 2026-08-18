@@ -1,11 +1,13 @@
 using HospitalManagementAPI;
 using Microsoft.EntityFrameworkCore;
+using HospitalManagementAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
+builder.Services.AddScoped<AuthService>();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 

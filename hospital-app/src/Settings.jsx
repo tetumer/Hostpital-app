@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import "./Settings.css";
+import NavBar from './NavBar'
 
 function Settings() {
   const currentUser = JSON.parse(localStorage.getItem("user"));

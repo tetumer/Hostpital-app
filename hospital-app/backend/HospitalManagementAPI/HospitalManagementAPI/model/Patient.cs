@@ -3,7 +3,9 @@
     public class Patient
     {
         public int Id { get; set; }
+        public int UserId { get; set; }
         public required string Name { get; set; }
+        public int? DoctorId { get; set; }
         public required DateOnly DateOfBirth { get; set; }
         public  required string BloodGroup { get; set; }
         public required string Status { get; set; }
