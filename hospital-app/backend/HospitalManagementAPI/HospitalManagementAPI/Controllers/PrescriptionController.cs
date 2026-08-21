@@ -1,198 +1,383 @@
 ﻿using HospitalManagementAPI.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
+using HospitalManagementAPI.Services;
 
 namespace HospitalManagementAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
     public class PrescriptionController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly AuthService _authService;
 
-        public PrescriptionController(AppDbContext context)
+        public PrescriptionController(
+            AppDbContext context,
+            AuthService authService)
         {
             _context = context;
+            _authService = authService;
         }
 
-        private string? GetRole()
+
+        // =========================================================
+        // AUTHENTICATION
+        // =========================================================
+
+        private User? GetCurrentUser()
         {
-            return User.FindFirst(ClaimTypes.Role)?.Value
-                ?? User.FindFirst("role")?.Value;
-        }
-
-        private int? GetUserId()
-        {
-            var value =
-                User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                ?? User.FindFirst("userId")?.Value
-                ?? User.FindFirst("id")?.Value;
-
-            if (int.TryParse(value, out int userId))
-                return userId;
-
-            return null;
+            return _authService.GetUserFromToken(
+                Request.Headers["Authorization"].ToString()
+            );
         }
 
 
-        // ================= GET =================
+        // =========================================================
+        // GET ALL / USER PRESCRIPTIONS
+        // =========================================================
 
         [HttpGet]
         public IActionResult Get()
         {
-            var role = GetRole();
-            var userId = GetUserId();
+            var user = GetCurrentUser();
 
-            if (role == null || userId == null)
-                return Unauthorized();
+            if (user == null)
+                return Unauthorized("You must be logged in.");
 
-            var prescriptions = _context.Prescriptions.AsQueryable();
 
-            // Patient -> only their prescriptions
-            if (role == "Patient")
+            // Owner + Receptionist
+            // Can see all prescriptions
+
+            if (
+                user.Role == "Owner" ||
+                user.Role == "Receptionist"
+            )
+            {
+                return Ok(
+                    _context.Prescriptions.ToList()
+                );
+            }
+
+
+            // Doctor
+            // Can only see prescriptions they wrote
+
+            if (user.Role == "Doctor")
+            {
+                var doctor = _context.Doctors
+                    .FirstOrDefault(
+                        d => d.UserId == user.Id
+                    );
+
+                if (doctor == null)
+                    return Ok(new List<Prescription>());
+
+                var prescriptions =
+                    _context.Prescriptions
+                        .Where(
+                            p => p.DoctorId == doctor.Id
+                        )
+                        .ToList();
+
+                return Ok(prescriptions);
+            }
+
+
+            // Patient
+            // Can only see their own prescriptions
+
+            if (user.Role == "Patient")
             {
                 var patient = _context.Patients
-                    .FirstOrDefault(p => p.UserId == userId);
+                    .FirstOrDefault(
+                        p => p.UserId == user.Id
+                    );
 
                 if (patient == null)
                     return Ok(new List<Prescription>());
 
-                prescriptions = prescriptions
-                    .Where(p => p.PatientId == patient.Id);
+                var prescriptions =
+                    _context.Prescriptions
+                        .Where(
+                            p => p.PatientId == patient.Id
+                        )
+                        .ToList();
+
+                return Ok(prescriptions);
             }
 
-            // Doctor -> only prescriptions written by them
-            else if (role == "Doctor")
-            {
-                var doctor = _context.Doctors
-                    .FirstOrDefault(d => d.UserId == userId);
 
-                if (doctor == null)
-                    return Ok(new List<Prescription>());
-
-                prescriptions = prescriptions
-                    .Where(p => p.DoctorId == doctor.Id);
-            }
-
-            // Owner + Receptionist -> everything
-
-            return Ok(prescriptions.ToList());
+            return Forbid();
         }
 
 
-        // ================= CREATE =================
+        // =========================================================
+        // CREATE
+        // =========================================================
 
         [HttpPost]
-        public IActionResult Create(Prescription newPrescription)
+        public IActionResult Create(
+            Prescription newPrescription)
         {
-            var role = GetRole();
-            var userId = GetUserId();
+            var user = GetCurrentUser();
 
-            if (role == null || userId == null)
-                return Unauthorized();
+            if (user == null)
+                return Unauthorized(
+                    "You must be logged in."
+                );
 
-            // Patient cannot create
-            if (role == "Patient")
+
+            // Patients cannot create prescriptions
+
+            if (user.Role == "Patient")
                 return Forbid();
 
-            // Doctor can only create prescriptions for themselves
-            if (role == "Doctor")
+
+            // Doctor
+            // Automatically use the logged-in doctor's ID.
+            // The frontend cannot create a prescription
+            // pretending to belong to another doctor.
+
+            if (user.Role == "Doctor")
             {
                 var doctor = _context.Doctors
-                    .FirstOrDefault(d => d.UserId == userId);
+                    .FirstOrDefault(
+                        d => d.UserId == user.Id
+                    );
 
                 if (doctor == null)
                     return Forbid();
 
-                newPrescription.DoctorId = doctor.Id;
+                newPrescription.DoctorId =
+                    doctor.Id;
             }
 
-            _context.Prescriptions.Add(newPrescription);
+
+            // Owner / Receptionist
+            // Can choose the doctor from the form.
+
+            if (
+                user.Role != "Owner" &&
+                user.Role != "Receptionist" &&
+                user.Role != "Doctor"
+            )
+            {
+                return Forbid();
+            }
+
+
+            // Make sure patient exists
+
+            var patientExists =
+                _context.Patients.Any(
+                    p => p.Id == newPrescription.PatientId
+                );
+
+            if (!patientExists)
+            {
+                return BadRequest(
+                    "Patient does not exist."
+                );
+            }
+
+
+            // Make sure doctor exists
+
+            var doctorExists =
+                _context.Doctors.Any(
+                    d => d.Id == newPrescription.DoctorId
+                );
+
+            if (!doctorExists)
+            {
+                return BadRequest(
+                    "Doctor does not exist."
+                );
+            }
+
+
+            _context.Prescriptions.Add(
+                newPrescription
+            );
+
             _context.SaveChanges();
+
 
             return Ok(newPrescription);
         }
 
 
-        // ================= UPDATE =================
+        // =========================================================
+        // UPDATE
+        // =========================================================
 
         [HttpPut("{id}")]
         public IActionResult Update(
             int id,
             Prescription updatedPrescription)
         {
-            var role = GetRole();
-            var userId = GetUserId();
+            var user = GetCurrentUser();
 
-            if (role == null || userId == null)
-                return Unauthorized();
+            if (user == null)
+                return Unauthorized(
+                    "You must be logged in."
+                );
 
-            if (role == "Patient")
+
+            // Patients cannot edit
+
+            if (user.Role == "Patient")
                 return Forbid();
 
-            var prescription = _context.Prescriptions.Find(id);
+
+            var prescription =
+                _context.Prescriptions.Find(id);
 
             if (prescription == null)
-                return NotFound();
+                return NotFound(
+                    "Prescription not found."
+                );
 
 
-            // Doctor can only edit their own prescriptions
-            if (role == "Doctor")
+            // Doctor
+            // Can only edit their own prescription.
+
+            if (user.Role == "Doctor")
             {
                 var doctor = _context.Doctors
-                    .FirstOrDefault(d => d.UserId == userId);
+                    .FirstOrDefault(
+                        d => d.UserId == user.Id
+                    );
 
-                if (doctor == null ||
-                    prescription.DoctorId != doctor.Id)
+                if (doctor == null)
+                    return Forbid();
+
+
+                if (
+                    prescription.DoctorId !=
+                    doctor.Id
+                )
                 {
                     return Forbid();
                 }
 
-                // Doctor cannot change ownership
-                prescription.DoctorId = doctor.Id;
+
+                // Doctor cannot change ownership.
+
+                prescription.DoctorId =
+                    doctor.Id;
             }
+
+
+            // Owner / Receptionist
+            // Can change the doctor.
+
+            else if (
+                user.Role == "Owner" ||
+                user.Role == "Receptionist"
+            )
+            {
+                var doctorExists =
+                    _context.Doctors.Any(
+                        d =>
+                            d.Id ==
+                            updatedPrescription.DoctorId
+                    );
+
+                if (!doctorExists)
+                {
+                    return BadRequest(
+                        "Doctor does not exist."
+                    );
+                }
+
+                prescription.DoctorId =
+                    updatedPrescription.DoctorId;
+            }
+
             else
             {
-                // Owner / Receptionist
-                prescription.DoctorId = updatedPrescription.DoctorId;
+                return Forbid();
             }
 
 
-            prescription.PatientId = updatedPrescription.PatientId;
-            prescription.Medicine = updatedPrescription.Medicine;
-            prescription.Dosage = updatedPrescription.Dosage;
-            prescription.Duration = updatedPrescription.Duration;
+            // Make sure patient exists
+
+            var patientExists =
+                _context.Patients.Any(
+                    p =>
+                        p.Id ==
+                        updatedPrescription.PatientId
+                );
+
+            if (!patientExists)
+            {
+                return BadRequest(
+                    "Patient does not exist."
+                );
+            }
+
+
+            prescription.PatientId =
+                updatedPrescription.PatientId;
+
+            prescription.Medicine =
+                updatedPrescription.Medicine;
+
+            prescription.Dosage =
+                updatedPrescription.Dosage;
+
+            prescription.Duration =
+                updatedPrescription.Duration;
+
 
             _context.SaveChanges();
+
 
             return Ok(prescription);
         }
 
 
-        // ================= DELETE =================
+        // =========================================================
+        // DELETE
+        // =========================================================
 
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-            var role = GetRole();
+            var user = GetCurrentUser();
+
+            if (user == null)
+                return Unauthorized(
+                    "You must be logged in."
+                );
+
 
             // Only Owner can delete
-            if (role != "Owner")
+
+            if (user.Role != "Owner")
                 return Forbid();
 
-            var prescription = _context.Prescriptions.Find(id);
+
+            var prescription =
+                _context.Prescriptions.Find(id);
 
             if (prescription == null)
-                return NotFound();
+                return NotFound(
+                    "Prescription not found."
+                );
 
-            _context.Prescriptions.Remove(prescription);
+
+            _context.Prescriptions.Remove(
+                prescription
+            );
+
             _context.SaveChanges();
 
-            return Ok();
+
+            return Ok(
+                "Prescription deleted successfully."
+            );
         }
     }
 }
-

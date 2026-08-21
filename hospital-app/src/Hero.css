@@ -1,0 +1,117 @@
+.hero-page {
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #1a1a1a;
+}
+
+.hero-nav {
+    background-color: #ffffff;
+}
+
+    .hero-nav .navbar-brand {
+        color: #14532d;
+    }
+
+/* Hero banner */
+.hero-banner {
+    background: linear-gradient(135deg, #f0f7f2 0%, #e6f0e9 100%);
+    padding: 80px 0;
+}
+
+.hero-title {
+    font-size: 3rem;
+    font-weight: 700;
+    line-height: 1.15;
+    color: #0f2d1c;
+    margin-bottom: 20px;
+}
+
+.hero-subtitle {
+    font-size: 1.15rem;
+    color: #45564c;
+    max-width: 480px;
+    line-height: 1.6;
+}
+
+.hero-img {
+    width: 100%;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(15, 45, 28, 0.15);
+}
+
+.btn-dark {
+    background-color: #14532d;
+    border-color: #14532d;
+}
+
+    .btn-dark:hover {
+        background-color: #0f3d21;
+        border-color: #0f3d21;
+    }
+
+.btn-outline-dark {
+    color: #14532d;
+    border-color: #14532d;
+}
+
+    .btn-outline-dark:hover {
+        background-color: #14532d;
+        border-color: #14532d;
+    }
+
+/* Alternating sections */
+.eyebrow {
+    display: inline-block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #2f7d4f;
+    margin-bottom: 10px;
+}
+
+.section-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #0f2d1c;
+    margin-bottom: 20px;
+}
+
+.section-img {
+    width: 100%;
+    border-radius: 16px;
+    box-shadow: 0 12px 30px rgba(15, 45, 28, 0.1);
+}
+
+.feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+    .feature-list li {
+        position: relative;
+        padding-left: 28px;
+        margin-bottom: 14px;
+        color: #364439;
+        font-size: 1.02rem;
+        line-height: 1.5;
+    }
+
+        .feature-list li::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 8px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #2f7d4f;
+        }
+
+.hero-footer {
+    background-color: #f5f5f4;
+    padding: 24px 0;
+    text-align: center;
+    color: #6b7280;
+    font-size: 0.9rem;
+}

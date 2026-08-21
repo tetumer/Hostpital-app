@@ -7,10 +7,26 @@ function DoctorDetails() {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        fetch(`https://localhost:7172/api/doctor/${id}`)
-            .then((response) => response.json())
+        const token = localStorage.getItem("token")
+
+        fetch(`https://localhost:7172/api/doctor/${id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Failed to load doctor details.")
+                }
+
+                return response.json()
+            })
             .then((data) => {
                 setDoctor(data)
+                setLoading(false)
+            })
+            .catch((error) => {
+                console.error("Failed to load doctor:", error)
                 setLoading(false)
             })
     }, [id])

@@ -15,7 +15,7 @@ function NavBar() {
 
         fetch("https://localhost:7172/api/dashboard", {
             headers: {
-                Authorization: `Bearer ${ token } `
+                Authorization: `Bearer ${token} `
             }
         })
             .then(async (response) => {
@@ -45,7 +45,6 @@ function NavBar() {
             { name: "Patients", path: "/patients", icon: "bi-people" },
             { name: "Doctors", path: "/doctors", icon: "bi-person-badge" },
             { name: "Appointments", path: "/appointments", icon: "bi-calendar-check" },
-            { name: "Departments", path: "/departments", icon: "bi-building" },
             { name: "Prescriptions", path: "/prescriptions", icon: "bi-prescription2" },
             { name: "Laboratory", path: "/labreports", icon: "bi-clipboard2-pulse" },
             { name: "Billing", path: "/bill", icon: "bi-receipt" }
@@ -56,7 +55,6 @@ function NavBar() {
             { name: "Patients", path: "/patients", icon: "bi-people" },
             { name: "Doctors", path: "/doctors", icon: "bi-person-badge" },
             { name: "Appointments", path: "/appointments", icon: "bi-calendar-check" },
-            { name: "Departments", path: "/departments", icon: "bi-building" },
             { name: "Prescriptions", path: "/prescriptions", icon: "bi-prescription2" },
             { name: "Laboratory", path: "/labreports", icon: "bi-clipboard2-pulse" },
             { name: "Billing", path: "/bill", icon: "bi-receipt" }
@@ -89,7 +87,7 @@ function NavBar() {
         fetch("https://localhost:7172/api/user/logout", {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${ token } `
+                Authorization: `Bearer ${token} `
             }
         })
             .finally(() => {
@@ -141,7 +139,7 @@ function NavBar() {
                                     to={item.path}
                                     className="nav-link"
                                 >
-                                    <i className={`${ item.icon } me - 1`}></i>
+                                    <i className={`${item.icon} me - 1`}></i>
                                     {item.name}
                                 </Link>
                             </li>

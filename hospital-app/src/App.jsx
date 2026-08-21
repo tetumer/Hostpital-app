@@ -11,10 +11,10 @@ import PrescriptionList from "./PrescriptionList";
 import LabReports from "./LabReports";
 import Dashboard from "./Dashboard";
 import Bill from "./Bill";
-import Reception from "./Reception";
 import Register from "./Register"
 import Login from "./Login";
 import Settings from "./Settings";
+import Hero from './Hero'
 import "./App.css";
 
 function App() {
@@ -32,10 +32,10 @@ function App() {
         <Route path="/labreports" element={<LabReports />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/bill" element={<Bill />} />
-        <Route path="/reception" element={<Reception />} />
         <Route path="/login" element={<Login />} />
         <Route path="/settings" element={<Settings />} />
-        <Route path="/register" element={<Register />}/>
+        <Route path="/register" element={<Register />} />
+        <Route path="/" element={<Hero />} />
       </Routes>
     </BrowserRouter>
   );

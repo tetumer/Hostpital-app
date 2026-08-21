@@ -41,33 +41,7 @@ namespace HospitalManagementAPI.Controllers
                 role = user.Role
             };
 
-            if (user.Role == "Doctor")
-            {
-                dashboard["overview"] = new
-                {
-                    totalPatients = _context.Patients.Count()
-                };
-
-                dashboard["appointments"] = new
-                {
-                    total = _context.Appointments.Count()
-                };
-            }
-
-            if (user.Role == "Receptionist")
-            {
-                dashboard["overview"] = new
-                {
-                    totalPatients = _context.Patients.Count(),
-                    totalDoctors = _context.Doctors.Count()
-                };
-
-                dashboard["appointments"] = new
-                {
-                    total = _context.Appointments.Count()
-                };
-            }
-
+            // ================= OWNER =================
             if (user.Role == "Owner")
             {
                 dashboard["overview"] = new
@@ -81,9 +55,115 @@ namespace HospitalManagementAPI.Controllers
                     total = _context.Appointments.Count()
                 };
 
+                var totalRevenue = _context.Billings.Sum(b =>
+                    b.ConsultationFee + b.MedicineFee + b.LabFee + b.OtherFee);
+
                 dashboard["financialOverview"] = new
                 {
-                    message = "Financial data will go here"
+                    revenue = totalRevenue
+                };
+
+                dashboard["charts"] = new
+                {
+                    appointmentsByStatus = _context.Appointments
+                        .GroupBy(a => a.Status)
+                        .Select(g => new { status = g.Key, count = g.Count() })
+                        .ToList(),
+
+                    doctorsByDepartment = _context.Doctors
+                        .GroupBy(d => d.Department)
+                        .Select(g => new { department = g.Key, count = g.Count() })
+                        .ToList(),
+
+                    patientsByStatus = _context.Patients
+                        .GroupBy(p => p.Status)
+                        .Select(g => new { status = g.Key, count = g.Count() })
+                        .ToList()
+                };
+            }
+
+            // ================= RECEPTIONIST =================
+            if (user.Role == "Receptionist")
+            {
+                dashboard["sections"] = new
+                {
+                    appointments = _context.Appointments.ToList(),
+
+                    doctors = new
+                    {
+                        total = _context.Doctors.Count(),
+                        available = _context.Doctors.Count(d => d.Availability),
+                        unavailable = _context.Doctors.Count(d => !d.Availability)
+                    },
+
+                    patients = new
+                    {
+                        total = _context.Patients.Count(),
+                        admitted = _context.Patients.Count(p => p.Status == "Admitted")
+                    },
+
+                    billing = new
+                    {
+                        total = _context.Billings.Count()
+                    }
+                };
+            }
+
+            // ================= DOCTOR =================
+            if (user.Role == "Doctor")
+            {
+                var doctor = _context.Doctors
+                    .FirstOrDefault(d => d.UserId == user.Id);
+
+                if (doctor == null)
+                {
+                    return NotFound("Doctor profile not found for this account.");
+                }
+
+                var myAppointments = _context.Appointments
+                    .Where(a => a.DoctorId == doctor.Id)
+                    .ToList();
+
+                var myPatientIds = myAppointments
+                    .Select(a => a.PatientId)
+                    .Distinct()
+                    .ToList();
+
+                dashboard["sections"] = new
+                {
+                    appointments = myAppointments,
+                    patients = new { total = myPatientIds.Count }
+                };
+            }
+
+            // ================= PATIENT =================
+            if (user.Role == "Patient")
+            {
+                var patient = _context.Patients
+                    .FirstOrDefault(p => p.UserId == user.Id);
+
+                if (patient == null)
+                {
+                    return NotFound("Patient profile not found for this account.");
+                }
+
+                var myAppointments = _context.Appointments
+                    .Where(a => a.PatientId == patient.Id)
+                    .ToList();
+
+                var myBills = _context.Billings
+                    .Where(b => b.PatientId == patient.Id)
+                    .ToList();
+
+                var myLabReports = _context.BloodTests
+                    .Where(bt => bt.PatientId == patient.Id)
+                    .ToList();
+
+                dashboard["sections"] = new
+                {
+                    appointments = myAppointments,
+                    billing = myBills,
+                    laboratory = myLabReports
                 };
             }
 

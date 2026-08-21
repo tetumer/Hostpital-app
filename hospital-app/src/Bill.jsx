@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import BillForm from './BillForm'
 import BillList from './BillList'
+import NavBar from './NavBar'
 
 function Bill() {
 
@@ -540,10 +541,7 @@ return (
 
     <div>
 
-        {/* =========================
-          FORM
-          Owner + Receptionist
-          ========================= */}
+        <NavBar />
 
         {canEdit && (
 

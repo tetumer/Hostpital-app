@@ -213,6 +213,23 @@ namespace HospitalManagementAPI.Controllers
 
             return Ok("User registered successfully.");
         }
+
+        [HttpGet("me")]
+        public IActionResult GetCurrentUser()
+        {
+            var user = GetUserFromToken();
+
+            if (user == null)
+                return Unauthorized();
+
+            return Ok(new
+            {
+                id = user.Id,
+                username = user.Username,
+                role = user.Role
+            });
+        }
+
         [HttpGet("count")]
         public IActionResult GetUserCount()
         {

@@ -24,6 +24,7 @@ function DoctorList() {
     const [editingId, setEditingId] = useState(null)
     const [search, setSearch] = useState("")
     const [loading, setLoading] = useState(true)
+    const [role, setRole] = useState(null)
 
     const emptyForm = {
         name: "",
@@ -37,58 +38,60 @@ function DoctorList() {
         department: "",
         arrivalTime: "",
         departureTime: "",
-        availability: ""
-    }
-
-    const getRoleFromToken = (token) => {
-        if (!token) return null
-
-        try {
-            const payload = JSON.parse(atob(token.split('.')[1]))
-
-            return (
-                payload[
-                "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
-                ] ||
-                payload.role
-            )
-        } catch {
-            return null
-        }
+        availability: false
     }
 
     useEffect(() => {
         const token = localStorage.getItem("token")
 
-        fetch('https://localhost:7172/api/doctor', {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        })
-            .then(async (response) => {
+        Promise.all([
+            fetch('https://localhost:7172/api/doctor', {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }),
 
-                if (!response.ok) {
+            fetch('https://localhost:7172/api/user/me', {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            })
+        ])
+            .then(async ([doctorResponse, userResponse]) => {
+
+                if (!doctorResponse.ok) {
 
                     if (
-                        response.status === 401 ||
-                        response.status === 403
+                        doctorResponse.status === 401 ||
+                        doctorResponse.status === 403
                     ) {
                         setAccessDenied(true)
                         setLoading(false)
                         return null
                     }
 
-                    const message = await response.text()
+                    const message = await doctorResponse.text()
                     throw new Error(message)
                 }
 
-                return response.json()
+                if (!userResponse.ok) {
+                    throw new Error("Failed to get current user.")
+                }
+
+                const doctors = await doctorResponse.json()
+                const user = await userResponse.json()
+
+                return {
+                    doctors,
+                    user
+                }
             })
             .then((data) => {
 
                 if (!data) return
 
-                setDoctors(data)
+                setDoctors(data.doctors)
+                setRole(data.user.role)
                 setLoading(false)
             })
             .catch((error) => {
@@ -102,14 +105,17 @@ function DoctorList() {
         doctor.name?.toLowerCase().includes(search.toLowerCase())
     )
 
-    const role = getRoleFromToken(
-        localStorage.getItem("token")
-    )
+    const canManage =
+        role === "Owner" ||
+        role === "Receptionist"
 
-    const canManage = role === "Owner" || role === "Receptionist"
-    const canDelete = role === "Owner"
+    const canDelete =
+        role === "Owner"
+
     const canToggleAvailability =
-        role === "Owner" || role === "Receptionist"
+        role === "Owner" ||
+        role === "Receptionist"
+
 
     const handleAddDoctor = () => {
 
@@ -119,7 +125,19 @@ function DoctorList() {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${localStorage.getItem("token")}`
             },
-            body: JSON.stringify(doctorForm)
+            body: JSON.stringify({
+                name: doctorForm.name,
+                dateOfBirth: doctorForm.dateOfBirth,
+                specialization: doctorForm.specialization,
+                gender: doctorForm.gender,
+                phone: doctorForm.phone,
+                email: doctorForm.email,
+                address: doctorForm.address,
+                licenseNumber: doctorForm.licenseNumber,
+                department: doctorForm.department,
+                arrivalTime: doctorForm.arrivalTime,
+                departureTime: doctorForm.departureTime
+            })
         })
             .then(async (response) => {
 
@@ -130,6 +148,12 @@ function DoctorList() {
                     return
                 }
 
+                alert(
+                    `Doctor created successfully!\n\n` +
+                    `Username: ${data.username}\n` +
+                    `Password: ${data.password}`
+                )
+
                 setDoctors([
                     ...doctors,
                     data.doctor
@@ -137,7 +161,11 @@ function DoctorList() {
 
                 setDoctorForm(emptyForm)
             })
+            .catch((error) => {
+                console.error("Doctor creation error:", error)
+            })
     }
+
 
     const handleDeleteDoctor = (id) => {
 
@@ -167,6 +195,7 @@ function DoctorList() {
             })
     }
 
+
     const startEditing = (doctor) => {
 
         setEditingId(doctor.id)
@@ -191,6 +220,7 @@ function DoctorList() {
             behavior: 'smooth'
         })
     }
+
 
     const handleUpdateDoctor = () => {
 
@@ -227,6 +257,7 @@ function DoctorList() {
             })
     }
 
+
     const handleToggleAvailability = (doctorId) => {
 
         fetch(
@@ -260,6 +291,7 @@ function DoctorList() {
             })
     }
 
+
     if (loading) {
         return (
             <div className="container py-5">
@@ -281,6 +313,7 @@ function DoctorList() {
         )
     }
 
+
     if (accessDenied) {
         return (
             <>
@@ -300,6 +333,7 @@ function DoctorList() {
             </>
         )
     }
+
 
     return (
         <div className="container py-4">
@@ -341,19 +375,23 @@ function DoctorList() {
                         </h4>
 
                         <p className="text-muted mb-0">
+
                             {editingId
                                 ? "Update the doctor's information below."
                                 : "Enter the doctor's information to create a new record."
                             }
+
                         </p>
 
                     </div>
+
 
                     <div className="card-body p-4">
 
                         <h6 className="text-primary fw-bold mb-3">
                             Personal Information
                         </h6>
+
 
                         <div className="row g-3">
 
@@ -491,6 +529,7 @@ function DoctorList() {
                             Contact Information
                         </h6>
 
+
                         <div className="row g-3">
 
                             <div className="col-md-6">
@@ -567,6 +606,7 @@ function DoctorList() {
                         <h6 className="text-primary fw-bold mb-3">
                             Department & Schedule
                         </h6>
+
 
                         <div className="row g-3">
 
@@ -770,7 +810,8 @@ function DoctorList() {
                                                 •
                                             </span>
 
-                                            {doctor.department || "No department assigned"}
+                                            {doctor.department ||
+                                                "No department assigned"}
 
                                         </div>
 
@@ -785,9 +826,11 @@ function DoctorList() {
                                                     : "bg-danger"
                                                 }`}
                                         >
+
                                             {doctor.availability
                                                 ? "Available"
                                                 : "Not Available"}
+
                                         </span>
 
 

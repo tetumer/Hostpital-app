@@ -1,46 +1,50 @@
 ﻿using HospitalManagementAPI.Models;
-using Microsoft.AspNetCore.Authorization;
+using HospitalManagementAPI.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 
 namespace HospitalManagementAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
     public class AppointmentController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly AuthService _authService;
 
-        public AppointmentController(AppDbContext context)
+        public AppointmentController(
+            AppDbContext context,
+            AuthService authService)
         {
             _context = context;
+            _authService = authService;
         }
 
 
+        private User? GetUserFromToken()
+        {
+            return _authService.GetUserFromToken(
+                Request.Headers["Authorization"].ToString()
+            );
+        }
 
 
         [HttpGet]
         public IActionResult Get()
         {
-            var role = User.FindFirst(ClaimTypes.Role)?.Value;
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var user = GetUserFromToken();
 
-            if (!int.TryParse(userIdClaim, out int userId))
-            {
+            if (user == null)
                 return Unauthorized();
-            }
 
-            if (role == "Owner" || role == "Receptionist")
+            if (user.Role == "Owner" || user.Role == "Receptionist")
             {
                 return Ok(_context.Appointments.ToList());
             }
 
-            if (role == "Doctor")
+            if (user.Role == "Doctor")
             {
                 var doctor = _context.Doctors
-                    .FirstOrDefault(d => d.UserId == userId);
+                    .FirstOrDefault(d => d.UserId == user.Id);
 
                 if (doctor == null)
                     return NotFound("Doctor profile not found.");
@@ -52,10 +56,10 @@ namespace HospitalManagementAPI.Controllers
                 return Ok(appointments);
             }
 
-            if (role == "Patient")
+            if (user.Role == "Patient")
             {
                 var patient = _context.Patients
-                    .FirstOrDefault(p => p.UserId == userId);
+                    .FirstOrDefault(p => p.UserId == user.Id);
 
                 if (patient == null)
                     return NotFound("Patient profile not found.");
@@ -74,12 +78,32 @@ namespace HospitalManagementAPI.Controllers
         [HttpPost]
         public IActionResult Create(Appointment newAppointment)
         {
-            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            var user = GetUserFromToken();
 
-            if (role != "Owner" && role != "Receptionist")
-            {
+            if (user == null)
+                return Unauthorized();
+
+            if (user.Role != "Owner" && user.Role != "Receptionist")
                 return Forbid();
+
+
+            var patientExists = _context.Patients
+                .Any(p => p.Id == newAppointment.PatientId);
+
+            if (!patientExists)
+            {
+                return BadRequest("Patient not found.");
             }
+
+
+            var doctorExists = _context.Doctors
+                .Any(d => d.Id == newAppointment.DoctorId);
+
+            if (!doctorExists)
+            {
+                return BadRequest("Doctor not found.");
+            }
+
 
             var sameDayAppointments = _context.Appointments
                 .Where(a =>
@@ -87,13 +111,25 @@ namespace HospitalManagementAPI.Controllers
                     a.Date == newAppointment.Date)
                 .ToList();
 
-            var newTime = TimeSpan.Parse(newAppointment.Time);
+
+            if (!TimeSpan.TryParse(
+                newAppointment.Time,
+                out var newTime))
+            {
+                return BadRequest("Invalid appointment time.");
+            }
+
 
             var conflict = sameDayAppointments.Any(a =>
-                Math.Abs(
-                    (TimeSpan.Parse(a.Time) - newTime).TotalMinutes
-                ) < 20
-            );
+            {
+                if (!TimeSpan.TryParse(a.Time, out var existingTime))
+                    return false;
+
+                return Math.Abs(
+                    (existingTime - newTime).TotalMinutes
+                ) < 20;
+            });
+
 
             if (conflict)
             {
@@ -101,6 +137,7 @@ namespace HospitalManagementAPI.Controllers
                     "This doctor already has an appointment within 20 minutes of that time."
                 );
             }
+
 
             _context.Appointments.Add(newAppointment);
             _context.SaveChanges();
@@ -109,17 +146,19 @@ namespace HospitalManagementAPI.Controllers
         }
 
 
-
-
         [HttpPut("{id}")]
-        public IActionResult Update(int id, Appointment updatedAppointment)
+        public IActionResult Update(
+            int id,
+            Appointment updatedAppointment)
         {
-            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            var user = GetUserFromToken();
 
-            if (role != "Owner" && role != "Receptionist")
-            {
+            if (user == null)
+                return Unauthorized();
+
+            if (user.Role != "Owner" && user.Role != "Receptionist")
                 return Forbid();
-            }
+
 
             var appointment = _context.Appointments.Find(id);
 
@@ -127,6 +166,25 @@ namespace HospitalManagementAPI.Controllers
             {
                 return NotFound();
             }
+
+
+            var patientExists = _context.Patients
+                .Any(p => p.Id == updatedAppointment.PatientId);
+
+            if (!patientExists)
+            {
+                return BadRequest("Patient not found.");
+            }
+
+
+            var doctorExists = _context.Doctors
+                .Any(d => d.Id == updatedAppointment.DoctorId);
+
+            if (!doctorExists)
+            {
+                return BadRequest("Doctor not found.");
+            }
+
 
             var sameDayAppointments = _context.Appointments
                 .Where(a =>
@@ -135,13 +193,25 @@ namespace HospitalManagementAPI.Controllers
                     a.Id != id)
                 .ToList();
 
-            var newTime = TimeSpan.Parse(updatedAppointment.Time);
+
+            if (!TimeSpan.TryParse(
+                updatedAppointment.Time,
+                out var newTime))
+            {
+                return BadRequest("Invalid appointment time.");
+            }
+
 
             var conflict = sameDayAppointments.Any(a =>
-                Math.Abs(
-                    (TimeSpan.Parse(a.Time) - newTime).TotalMinutes
-                ) < 20
-            );
+            {
+                if (!TimeSpan.TryParse(a.Time, out var existingTime))
+                    return false;
+
+                return Math.Abs(
+                    (existingTime - newTime).TotalMinutes
+                ) < 20;
+            });
+
 
             if (conflict)
             {
@@ -150,11 +220,13 @@ namespace HospitalManagementAPI.Controllers
                 );
             }
 
+
             appointment.PatientId = updatedAppointment.PatientId;
             appointment.DoctorId = updatedAppointment.DoctorId;
             appointment.Date = updatedAppointment.Date;
             appointment.Time = updatedAppointment.Time;
             appointment.Status = updatedAppointment.Status;
+
 
             _context.SaveChanges();
 
@@ -162,16 +234,17 @@ namespace HospitalManagementAPI.Controllers
         }
 
 
-
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            var user = GetUserFromToken();
 
-            if (role != "Owner")
-            {
+            if (user == null)
+                return Unauthorized();
+
+            if (user.Role != "Owner")
                 return Forbid();
-            }
+
 
             var appointment = _context.Appointments.Find(id);
 
@@ -179,6 +252,7 @@ namespace HospitalManagementAPI.Controllers
             {
                 return NotFound();
             }
+
 
             _context.Appointments.Remove(appointment);
             _context.SaveChanges();

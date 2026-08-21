@@ -41,13 +41,18 @@ namespace HospitalManagementAPI.Controllers
             // for doc
             if (user.Role == "Doctor")
             {
+                var doctor = _context.Doctors
+                    .FirstOrDefault(d => d.UserId == user.Id);
+
+                if (doctor == null)
+                    return NotFound();
+
                 var patients = _context.Patients
-                    .Where(p => p.DoctorId == user.Id)
+                    .Where(p => p.DoctorId == doctor.Id)
                     .ToList();
 
                 return Ok(patients);
             }
-
             // for patient
             if (user.Role == "Patient")
             {
