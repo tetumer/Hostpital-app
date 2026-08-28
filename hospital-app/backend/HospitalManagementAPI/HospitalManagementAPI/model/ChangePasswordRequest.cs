@@ -1,8 +1,14 @@
-﻿namespace HospitalManagementAPI.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+public class ChangePasswordRequest
 {
-    public class ChangePasswordRequest
-    {
-        public required string CurrentPassword { get; set; }
-        public required string NewPassword { get; set; }
-    }
+    [Required(ErrorMessage = "Current password is required.")]
+    [DataType(DataType.Password)]
+    public string CurrentPassword { get; set; }
+
+    [Required(ErrorMessage = "New password is required.")]
+    [StringLength(100, MinimumLength = 8,
+        ErrorMessage = "New password must be between 8 and 100 characters.")]
+    [DataType(DataType.Password)]
+    public string NewPassword { get; set; }
 }

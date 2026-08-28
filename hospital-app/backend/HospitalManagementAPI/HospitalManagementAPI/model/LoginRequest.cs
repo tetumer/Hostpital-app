@@ -1,9 +1,11 @@
-﻿namespace HospitalManagementAPI.Models
-{
-    public class LoginRequest
-    {
-        public required string Username { get; set; }
-        public required string Password { get; set; }
+﻿using System.ComponentModel.DataAnnotations;
 
-    }
+public class LoginRequest
+{
+    [Required(ErrorMessage = "Username is required.")]
+    public string Username { get; set; }
+
+    [Required(ErrorMessage = "Password is required.")]
+    [DataType(DataType.Password)]
+    public string Password { get; set; }
 }
