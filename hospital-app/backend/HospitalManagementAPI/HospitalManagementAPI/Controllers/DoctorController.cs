@@ -11,13 +11,16 @@ namespace HospitalManagementAPI.Controllers
     {
         private readonly AppDbContext _context;
         private readonly AuthService _authService;
+        private readonly PasswordService _passwordService;
 
         public DoctorController(
             AppDbContext context,
-            AuthService authService)
+            AuthService authService,
+            PasswordService passwordService)
         {
             _context = context;
             _authService = authService;
+            _passwordService = passwordService;
         }
 
         [HttpGet]
@@ -152,7 +155,7 @@ namespace HospitalManagementAPI.Controllers
             var newUser = new User
             {
                 Username = username,
-                Password = password,
+                Password = _passwordService.Hash(password),
                 Role = "Doctor"
             };
 

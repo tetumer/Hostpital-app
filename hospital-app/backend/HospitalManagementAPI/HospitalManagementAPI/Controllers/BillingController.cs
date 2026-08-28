@@ -1,21 +1,22 @@
 ﻿using HospitalManagementAPI.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
+using HospitalManagementAPI.Services;
 
 namespace HospitalManagementAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
     public class BillingController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly AuthService _authService;
 
-        public BillingController(AppDbContext context)
+        public BillingController(
+            AppDbContext context,
+            AuthService authService)
         {
             _context = context;
+            _authService = authService;
         }
 
 
@@ -23,18 +24,22 @@ namespace HospitalManagementAPI.Controllers
         [HttpGet]
         public IActionResult Get()
         {
-            var role = User.FindFirst(ClaimTypes.Role)?.Value;
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var user = _authService.GetUserFromToken(
+                Request.Headers["Authorization"].ToString()
+            );
 
-            if (role == "Owner" || role == "Receptionist")
+            if (user == null)
+                return Unauthorized("You must be logged in.");
+
+            if (user.Role == "Owner" || user.Role == "Receptionist")
             {
                 return Ok(_context.Billings.ToList());
             }
 
-            if (role == "Doctor")
+            if (user.Role == "Doctor")
             {
                 var doctor = _context.Doctors
-                    .FirstOrDefault(d => d.UserId.ToString() == userId);
+                    .FirstOrDefault(d => d.UserId == user.Id);
 
                 if (doctor == null)
                     return Unauthorized();
@@ -46,10 +51,10 @@ namespace HospitalManagementAPI.Controllers
                 );
             }
 
-            if (role == "Patient")
+            if (user.Role == "Patient")
             {
                 var patient = _context.Patients
-                    .FirstOrDefault(p => p.UserId.ToString() == userId);
+                    .FirstOrDefault(p => p.UserId == user.Id);
 
                 if (patient == null)
                     return Unauthorized();
@@ -66,22 +71,38 @@ namespace HospitalManagementAPI.Controllers
 
 
         [HttpPost]
-        [Authorize(Roles = "Owner,Receptionist")]
         public IActionResult Create(Billing newBilling)
         {
-            _context.Billings.Add(newBilling);
+            var user = _authService.GetUserFromToken(
+                Request.Headers["Authorization"].ToString()
+            );
 
+            if (user == null)
+                return Unauthorized("You must be logged in.");
+
+            if (user.Role != "Owner" && user.Role != "Receptionist")
+                return Forbid();
+
+            _context.Billings.Add(newBilling);
             _context.SaveChanges();
 
             return Ok(newBilling);
         }
 
 
-
         [HttpPut("{id}")]
-        [Authorize(Roles = "Owner,Receptionist")]
         public IActionResult Update(int id, Billing updatedBilling)
         {
+            var user = _authService.GetUserFromToken(
+                Request.Headers["Authorization"].ToString()
+            );
+
+            if (user == null)
+                return Unauthorized("You must be logged in.");
+
+            if (user.Role != "Owner" && user.Role != "Receptionist")
+                return Forbid();
+
             var billing = _context.Billings.Find(id);
 
             if (billing == null)
@@ -100,18 +121,25 @@ namespace HospitalManagementAPI.Controllers
         }
 
 
-
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Owner")]
         public IActionResult Delete(int id)
         {
+            var user = _authService.GetUserFromToken(
+                Request.Headers["Authorization"].ToString()
+            );
+
+            if (user == null)
+                return Unauthorized("You must be logged in.");
+
+            if (user.Role != "Owner")
+                return Forbid();
+
             var billing = _context.Billings.Find(id);
 
             if (billing == null)
                 return NotFound();
 
             _context.Billings.Remove(billing);
-
             _context.SaveChanges();
 
             return Ok();

@@ -1,19 +1,38 @@
 import { useParams, Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
+import NavBar from './navbar'
 
 function PatientDetails() {
     const { id } = useParams()
     const [patient, setPatient] = useState(null)
     const [loading, setLoading] = useState(true)
 
-    useEffect(() => {
-        fetch(`https://localhost:7172/api/patient/${id}`)
-            .then((response) => response.json())
-            .then((data) => {
-                setPatient(data)
-                setLoading(false)
-            })
-    }, [id])
+useEffect(() => {
+    const token = localStorage.getItem("token")
+
+    fetch(`https://localhost:7172/api/patient/${id}`, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+        .then(async (response) => {
+            if (!response.ok) {
+                const message = await response.text()
+                throw new Error(message)
+            }
+
+            return response.json()
+        })
+        .then((data) => {
+            setPatient(data)
+            setLoading(false)
+        })
+        .catch((error) => {
+            console.error("Could not load patient:", error)
+            setPatient(null)
+            setLoading(false)
+        })
+}, [id])
 
     if (loading) {
         return (

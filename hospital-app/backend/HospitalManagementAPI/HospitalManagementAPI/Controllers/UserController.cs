@@ -11,13 +11,16 @@ namespace HospitalManagementAPI.Controllers
     {
         private readonly AppDbContext _context;
         private readonly AuthService _authService;
+        private readonly PasswordService _passwordService;
 
         public UserController(
             AppDbContext context,
-            AuthService authService)
+            AuthService authService,
+            PasswordService passwordService)
         {
             _context = context;
             _authService = authService;
+            _passwordService = passwordService;
         }
 
 
@@ -32,12 +35,18 @@ namespace HospitalManagementAPI.Controllers
         public IActionResult Login([FromBody] LoginRequest loginRequest)
         {
             var user = _context.Users.FirstOrDefault(u =>
-                u.Username == loginRequest.Username &&
-                u.Password == loginRequest.Password);
+                u.Username == loginRequest.Username);
 
-            if (user == null)
+            if (user == null ||
+                !_passwordService.Verify(loginRequest.Password, user.Password))
             {
                 return Unauthorized("Invalid username or password");
+            }
+
+            if (!_passwordService.IsHashed(user.Password))
+            {
+                user.Password = _passwordService.Hash(loginRequest.Password);
+                _context.SaveChanges();
             }
 
             var tokenBytes =
@@ -119,14 +128,14 @@ namespace HospitalManagementAPI.Controllers
             if (user == null)
                 return NotFound();
 
-            if (user.Password != request.CurrentPassword)
+            if (!_passwordService.Verify(request.CurrentPassword, user.Password))
             {
                 return Unauthorized(
                     "Current password is incorrect."
                 );
             }
 
-            user.Password = request.NewPassword;
+            user.Password = _passwordService.Hash(request.NewPassword);
 
             _context.SaveChanges();
 
@@ -147,7 +156,7 @@ namespace HospitalManagementAPI.Controllers
                 var firstOwner = new User
                 {
                     Username = request.Username,
-                    Password = request.Password,
+                    Password = _passwordService.Hash(request.Password),
                     Role = "Owner"
                 };
 
@@ -204,7 +213,7 @@ namespace HospitalManagementAPI.Controllers
             var newUser = new User
             {
                 Username = request.Username,
-                Password = request.Password,
+                Password = _passwordService.Hash(request.Password),
                 Role = request.Role
             };
 
