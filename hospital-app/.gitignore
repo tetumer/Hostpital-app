@@ -29,3 +29,8 @@ dist-ssr
 
 # Visual Studio
 .vs/
+
+# Database
+**/hospital.db
+**/hospital.db-shm
+**/hospital.db-wal
