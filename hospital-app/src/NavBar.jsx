@@ -42,6 +42,7 @@ function NavBar() {
     const navItems = {
         Owner: [
             { name: "Dashboard", path: "/dashboard", icon: "bi-speedometer2" },
+            { name: "Register", path: "/register", icon: "bi-person-plus" },
             { name: "Patients", path: "/patients", icon: "bi-people" },
             { name: "Doctors", path: "/doctors", icon: "bi-person-badge" },
             { name: "Appointments", path: "/appointments", icon: "bi-calendar-check" },

@@ -1,8 +1,9 @@
-﻿using HospitalManagementAPI.Models;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using HospitalManagementAPI.Validation;
 
 namespace HospitalManagementAPI.Models
 {
+    [DoctorTimeValidation]
     public class Doctor
     {
         public int Id { get; set; }
@@ -14,14 +15,15 @@ namespace HospitalManagementAPI.Models
             ErrorMessage = "Doctor name must be between 2 and 100 characters.")]
         public required string Name { get; set; }
 
+        [Required(ErrorMessage = "Date of birth is required.")]
         public DateOnly DateOfBirth { get; set; }
 
         [Required(ErrorMessage = "Gender is required.")]
         public required string Gender { get; set; }
 
         [Required(ErrorMessage = "Specialization is required.")]
-        [StringLength(100,
-            ErrorMessage = "Specialization cannot exceed 100 characters.")]
+        [StringLength(100, MinimumLength = 2,
+            ErrorMessage = "Specialization must be between 2 and 100 characters.")]
         public required string Specialization { get; set; }
 
         [Required(ErrorMessage = "Phone number is required.")]
@@ -33,20 +35,18 @@ namespace HospitalManagementAPI.Models
         public required string Email { get; set; }
 
         [Required(ErrorMessage = "Address is required.")]
-        [StringLength(250,
-            ErrorMessage = "Address cannot exceed 250 characters.")]
+        [StringLength(250, ErrorMessage = "Address cannot exceed 250 characters.")]
         public required string Address { get; set; }
 
         [Required(ErrorMessage = "License number is required.")]
-        [StringLength(50,
-            ErrorMessage = "License number cannot exceed 50 characters.")]
+        [StringLength(50, ErrorMessage = "License number cannot exceed 50 characters.")]
         public required string LicenseNumber { get; set; }
 
         [Required(ErrorMessage = "Department is required.")]
-        [StringLength(100,
-            ErrorMessage = "Department cannot exceed 100 characters.")]
+        [StringLength(100, ErrorMessage = "Department cannot exceed 100 characters.")]
         public required string Department { get; set; }
 
+        [DoctorTimeValidation]
         public TimeOnly ArrivalTime { get; set; }
 
         public TimeOnly DepurtureTime { get; set; }

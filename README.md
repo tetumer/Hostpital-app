@@ -114,6 +114,7 @@ cd backend/HospitalManagementAPI/HospitalManagementAPI
 dotnet restore
 dotnet tool install --global dotnet-ef
 dotnet dev-certs https --trust
+del hospital.db 2>nul     
 dotnet ef database update
 dotnet run --launch-profile https
 ```

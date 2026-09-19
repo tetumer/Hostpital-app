@@ -184,23 +184,10 @@ namespace HospitalManagementAPI.Controllers
             {
                 if (
                     request.Role != "Owner" &&
-                    request.Role != "Receptionist" &&
-                    request.Role != "Doctor" &&
-                    request.Role != "Patient"
+                    request.Role != "Receptionist"
                 )
                 {
-                    return BadRequest("Invalid role.");
-                }
-            }
-
-            else if (currentUser.Role == "Receptionist")
-            {
-                if (
-                    request.Role != "Doctor" &&
-                    request.Role != "Patient"
-                )
-                {
-                    return Forbid();
+                    return BadRequest("Doctor and Patient accounts must be created through their respective forms, not registration.");
                 }
             }
 

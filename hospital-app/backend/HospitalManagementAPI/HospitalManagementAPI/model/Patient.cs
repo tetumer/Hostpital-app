@@ -19,20 +19,22 @@ namespace HospitalManagementAPI.Models
         public required DateOnly DateOfBirth { get; set; }
 
         [Required(ErrorMessage = "Blood group is required.")]
+        [StringLength(10, ErrorMessage = "Blood group cannot exceed 10 characters.")]
         public required string BloodGroup { get; set; }
 
         [Required(ErrorMessage = "Patient status is required.")]
+        [StringLength(30, ErrorMessage = "Patient status cannot exceed 30 characters.")]
         public required string Status { get; set; }
 
         [Required(ErrorMessage = "Admission date is required.")]
         public required DateOnly AdmissionDate { get; set; }
 
-        [StringLength(500,
-            ErrorMessage = "Allergies cannot exceed 500 characters.")]
+        [Required(ErrorMessage = "Allergies information is required.")]
+        [StringLength(500, ErrorMessage = "Allergies cannot exceed 500 characters.")]
         public required string Allergies { get; set; }
 
-        [StringLength(1000,
-            ErrorMessage = "Medical history cannot exceed 1000 characters.")]
+        [Required(ErrorMessage = "Medical history is required.")]
+        [StringLength(1000, ErrorMessage = "Medical history cannot exceed 1000 characters.")]
         public required string MedicalHistory { get; set; }
 
         [Required(ErrorMessage = "Phone number is required.")]
@@ -40,8 +42,7 @@ namespace HospitalManagementAPI.Models
         public required string Phone { get; set; }
 
         [Required(ErrorMessage = "Address is required.")]
-        [StringLength(250,
-            ErrorMessage = "Address cannot exceed 250 characters.")]
+        [StringLength(250, ErrorMessage = "Address cannot exceed 250 characters.")]
         public required string Address { get; set; }
 
         [Required(ErrorMessage = "Emergency contact is required.")]
@@ -51,16 +52,16 @@ namespace HospitalManagementAPI.Models
         [Required(ErrorMessage = "Gender is required.")]
         public required string Gender { get; set; }
 
-        [StringLength(100,
-            ErrorMessage = "Provider name cannot exceed 100 characters.")]
+        [Required(ErrorMessage = "Provider is required.")]
+        [StringLength(100, ErrorMessage = "Provider name cannot exceed 100 characters.")]
         public required string Provider { get; set; }
 
-        [StringLength(50,
-            ErrorMessage = "Policy number cannot exceed 50 characters.")]
+        [Required(ErrorMessage = "Policy number is required.")]
+        [StringLength(50, ErrorMessage = "Policy number cannot exceed 50 characters.")]
         public required string PolicyNumber { get; set; }
 
-        [StringLength(100,
-            ErrorMessage = "Coverage information cannot exceed 100 characters.")]
+        [Required(ErrorMessage = "Coverage information is required.")]
+        [StringLength(100, ErrorMessage = "Coverage information cannot exceed 100 characters.")]
         public required string Coverage { get; set; }
     }
 }

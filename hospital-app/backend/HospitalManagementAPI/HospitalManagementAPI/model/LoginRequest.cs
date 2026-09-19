@@ -1,11 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-public class LoginRequest
+namespace HospitalManagementAPI.Models
 {
-    [Required(ErrorMessage = "Username is required.")]
-    public string Username { get; set; }
+    public class LoginRequest
+    {
+        [Required(ErrorMessage = "Username is required.")]
+        public required string Username { get; set; }
 
-    [Required(ErrorMessage = "Password is required.")]
-    [DataType(DataType.Password)]
-    public string Password { get; set; }
+        [Required(ErrorMessage = "Password is required.")]
+        public required string Password { get; set; }
+    }
 }

@@ -1,0 +1,14 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\hospital-app",
+    "\\hospital-app\\backend",
+    "\\hospital-app\\backend\\HospitalManagementAPI",
+    "\\hospital-app\\backend\\HospitalManagementAPI\\HospitalManagementAPI",
+    "\\hospital-app\\backend\\HospitalManagementAPI\\HospitalManagementAPI\\model",
+    "\\hospital-app\\backend\\HospitalManagementAPI\\HospitalManagementAPI\\Validation",
+    "\\hospital-app\\src"
+  ],
+  "SelectedNode": "\\hospital-app\\backend\\HospitalManagementAPI\\HospitalManagementAPI\\model\\UserSession.cs",
+  "PreviewInSolutionExplorer": false
+}

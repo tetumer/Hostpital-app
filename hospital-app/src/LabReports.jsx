@@ -267,10 +267,7 @@ function LabReports() {
 
                                     <div className="d-flex justify-content-between align-items-center">
 
-                                        <Link
-                                            to={`/lab-reports/${report.id}`}
-                                            className="text-decoration-none text-dark flex-grow-1"
-                                        >
+                                        <div className="flex-grow-1">
 
                                             <div>
 
@@ -285,10 +282,29 @@ function LabReports() {
                                                 <div className="text-muted small">
                                                     Doctor: {doctor?.name || "Unknown"}
                                                 </div>
+                                                <div>
+                                                    <h5 className="mb-1">
+                                                        {reportName}
+                                                    </h5>
+
+                                                    <div className="text-muted small">
+                                                        Patient: {patient?.name || "Unknown"}
+                                                    </div>
+
+                                                    <div className="text-muted small">
+                                                        Doctor: {doctor?.name || "Unknown"}
+                                                    </div>
+
+                                                    {!isBloodGroup && (
+                                                        <div className="text-muted small mt-2" style={{ whiteSpace: 'pre-wrap' }}>
+                                                            {report.results}
+                                                        </div>
+                                                    )}
+                                                </div>
 
                                             </div>
 
-                                        </Link>
+                                        </div>
 
 
                                         <div className="text-end ms-3">
